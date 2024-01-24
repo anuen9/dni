@@ -29,6 +29,7 @@
         <module>medicalrecord-service</module>
         <module>patient-service</module>
         <module>api</module>
+        <module>gateway</module>
     </modules>
 
     <!-- public dependencies -->
@@ -80,10 +81,10 @@
             <version>3.0.3</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-web</artifactId>-->
+<!--        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/cn.hutool/hutool-all -->
         <dependency>

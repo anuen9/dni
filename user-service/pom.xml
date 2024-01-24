@@ -51,6 +51,12 @@
 			<artifactId>spring-cloud-starter-bootstrap</artifactId>
 			<version>3.0.5</version>
 		</dependency>
+
+		<!-- spring boot web -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
 	</dependencies>
 
 </project>

@@ -1,0 +1,28 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: gateway
+  cloud:
+    # nacos config
+    nacos:
+      username: nacos
+      password: nacos
+      discovery:
+        server-addr: 120.26.195.152:8848
+        namespace: e27cd146-99bd-402b-aaf9-6a2485253c37
+      config:
+        server-addr: 120.26.195.152:8848
+        namespace: e27cd146-99bd-402b-aaf9-6a2485253c37
+        file-extension: yaml
+    # gateway config
+    gateway:
+      routes:
+        - id: patient-service
+          uri: lb://patient-service
+          predicates:
+            - Path=/api/patient/**
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/user/**
