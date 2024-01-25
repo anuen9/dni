@@ -8,4 +8,6 @@ import org.anuen.patient.entity.po.Patient;
 public interface IPatientService extends IService<Patient> {
     ResponseEntity<?> save(PatientDto patientDto);
 
+    ResponseEntity<?> findOne(Integer userId);
+
 }

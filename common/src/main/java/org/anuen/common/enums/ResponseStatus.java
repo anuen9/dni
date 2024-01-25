@@ -4,8 +4,12 @@ import lombok.Getter;
 
 @Getter
 public enum ResponseStatus {
+    // success response: code is 0
     SUCCESS(0, "success"),
-    FAIL(-1, "fail"),
+    USER_NOT_FOUND(0, "user not found"),
+
+    // fail response: code are start with 100
+    FAIL(1000, "fail"),
     USER_EXISTS(1001, "user exists"),
 
     ;

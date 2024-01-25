@@ -8,3 +8,15 @@ mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+anuen:
+  auth:
+    excludePath:
+      - /api/user/login
+      - /api/user/sign
+      - /api/search/**
+  jwt:
+    location: classpath:jwt.jks
+    algorithm: rs256
+    alias: jwt
+    password: 20011001
+    tokenTTL: 30m

@@ -48,10 +48,6 @@ public class ResponseEntity<T> {
         return success(data, ResponseStatus.SUCCESS.getMessage());
     }
 
-    public static <T> ResponseEntity<T> success(String message) {
-        return success(null, message);
-    }
-
     public static <T> ResponseEntity<T> success(T data, String message) {
         return new ResponseEntity<>(
                 message,
