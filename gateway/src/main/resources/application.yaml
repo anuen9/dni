@@ -12,7 +12,7 @@ anuen:
   auth:
     excludePath:
       - /api/user/login
-      - /api/user/sign
+      - /api/patient/add
       - /api/search/**
   jwt:
     location: classpath:jwt.jks

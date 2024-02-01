@@ -36,16 +36,21 @@ public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> impl
 
     @Override
     public ResponseEntity<?> save(PatientDto patientDto) {
-        // convert DTO to PO
-        Patient patient = Patient.newInstance();
+        Patient dbPatient = lambdaQuery() // if user already exists -> return
+                .eq(Patient::getFirstName, patientDto.getFirstName())
+                .eq(Patient::getLastName, patientDto.getLastName())
+                .one();
+        if (Objects.nonNull(dbPatient)) {
+            return ResponseEntity.fail(ResponseStatus.USER_EXISTS);
+        }
+
+        Patient patient = Patient.newInstance(); // convert dto 2 po -> insert into database
         BeanUtils.copyProperties(patientDto, patient);
         patient.setUid(IdUtil.fastUUID());
-        // storage patient
         save(patient);
-        // get userDto by patient
-        UserDto user4Save = getUser4Save(patient);
-        // call user service to add user by RPC
-        userClient.add(user4Save);
+
+        UserDto user4Save = getUser4Save(patient); // get userDto by patient
+        userClient.add(user4Save); // call service [user-service] to save user
         return ResponseEntity.success();
     }
 
@@ -55,7 +60,7 @@ public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> impl
                 new LambdaQueryWrapper<Patient>()
                         .eq(Patient::getId, userId));
         if (Objects.isNull(one)) {
-            return ResponseEntity.success(null, ResponseStatus.USER_NOT_FOUND.getMessage());
+            return ResponseEntity.fail(ResponseStatus.USER_NOT_FOUND);
         }
         return ResponseEntity.success(one);
     }
@@ -68,7 +73,7 @@ public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> impl
      * @return userDto for saving
      */
     private UserDto getUser4Save(Patient patient) {
-        final String nickName = patient.getFirstName() + patient.getLastName();
+        final String nickName = patient.getLastName() + patient.getFirstName();
         return UserDto.builder()
                 .uid(patient.getUid())
                 .userType(defaultInfoProperties.getUserType())

@@ -69,28 +69,17 @@ public class ResponseEntity<T> {
     }
 
     public static <T> ResponseEntity<T> fail(T data) {
-        return fail(data, ResponseStatus.FAIL.getMessage());
-    }
-
-    public static <T> ResponseEntity<T> fail(String message) {
-        return fail(null, message);
+        return fail(ResponseStatus.FAIL, data);
     }
 
     public static <T> ResponseEntity<T> fail(ResponseStatus statusEnum) {
-        return fail(statusEnum.getMessage(), statusEnum);
+        return fail(statusEnum, null);
     }
 
-    public static <T> ResponseEntity<T> fail(String message, ResponseStatus statusEnum) {
+    public static <T> ResponseEntity<T> fail(ResponseStatus statusEnum, T data) {
         return new ResponseEntity<>(
-                message,
+                statusEnum.getMessage(),
                 statusEnum.getCode(),
-                null);
-    }
-
-    public static <T> ResponseEntity<T> fail(T data, String message) {
-        return new ResponseEntity<>(
-                message,
-                ResponseStatus.FAIL.getCode(),
                 data);
     }
 

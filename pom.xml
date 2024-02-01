@@ -30,6 +30,7 @@
         <module>patient-service</module>
         <module>api</module>
         <module>gateway</module>
+        <module>utils</module>
     </modules>
 
     <!-- public dependencies -->
