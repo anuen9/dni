@@ -5,12 +5,14 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.anuen.api.client.AuthClient;
 import org.anuen.common.entity.ResponseEntity;
+import org.anuen.common.enums.RedisConst;
 import org.anuen.common.enums.ResponseStatus;
 import org.anuen.user.dao.UserMapper;
 import org.anuen.user.entity.dto.LoginForm;
 import org.anuen.user.entity.dto.UserDto;
 import org.anuen.user.entity.po.User;
 import org.anuen.user.service.IUserService;
+import org.anuen.utils.CacheClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final PasswordEncoder passwordEncoder;
 
     private final AuthClient authClient;
+
+    private final CacheClient cacheClient;
 
     @Override
     public ResponseEntity<?> save(UserDto userDto) {
@@ -64,6 +68,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             final String reason = "details: " + resp.getMessage();
             return ResponseEntity.fail(ResponseStatus.REMOTE_PROCEDURE_CALL_ERROR, reason);
         }
+
+        dbUser.setPassword("Hidden");
+        cacheClient.set(RedisConst.LOGIN_USER, dbUser.getUid(), dbUser); // put user info into redis cache
 
         final String token = resp.getData().toString(); // get and return token
         if (StrUtil.isBlank(token)) {

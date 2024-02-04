@@ -64,6 +64,21 @@
 			<artifactId>api</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
+
+		<!-- redis cache client -->
+		<dependency>
+			<groupId>org.anuen</groupId>
+			<artifactId>utils</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<!-- common -->
+		<dependency>
+			<groupId>org.anuen</groupId>
+			<artifactId>common</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
 	</dependencies>
 
 </project>

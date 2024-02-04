@@ -48,16 +48,19 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
             return deny(exchange); // if token is blank and didn't start with 'Bearer '
         }
 
-        String userUid = null;
+        String userUid;
         try {
             String token = authHeader.substring(7); // parse token extract userUid
             userUid = jwtTool.parseToken(token);
         } catch (UnauthorizedException e) {
             return deny(exchange); // if throw unauthorized exception, deny request
         }
-        // todo xxx
 
-        return chain.filter(exchange);
+        String stableUid = userUid; // transform user info to lower service
+        ServerWebExchange newExchange = exchange.mutate()
+                .request(builder -> builder.header("user-info", stableUid))
+                .build();
+        return chain.filter(newExchange);
     }
 
     /**
