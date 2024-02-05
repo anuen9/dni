@@ -90,6 +90,12 @@
             <version>2.0.25</version>
         </dependency>
 
+        <!-- spring boot starter AMQP -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

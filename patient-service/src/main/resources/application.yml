@@ -4,10 +4,20 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: Fan20011001
+  rabbitmq:
+    host: 120.26.195.152
+    port: 5672
+    virtual-host: /
+    username: anuen
+    password: 20011001
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-default-info:
-  password: "123456"
-  userType: 0
+anuen:
+  default-info:
+    password: "123456"
+    userType: 0
+  email:
+    emailVerified: 1
+    emailNotVerified: 0

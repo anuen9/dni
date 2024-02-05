@@ -1,9 +1,12 @@
 package org.anuen.patient.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.anuen.common.entity.ModifyPassForm;
 import org.anuen.common.entity.ResponseEntity;
-import org.anuen.common.utils.UserContextHolder;
+import org.anuen.common.enums.ResponseStatus;
+import org.anuen.common.exception.UnauthorizedException;
 import org.anuen.patient.entity.dto.PatientDto;
 import org.anuen.patient.service.IPatientService;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +24,18 @@ public class PatientController {
         return patientService.save(patientDto);
     }
 
+    @PostMapping("/modifyPass")
+    public ResponseEntity<?> modifyPass(@Valid @RequestBody ModifyPassForm modifyPassForm) {
+        try {
+            return patientService.modifyPass(modifyPassForm);
+        } catch (UnauthorizedException ue) {
+            return ResponseEntity.fail(ResponseStatus.UNAUTHORIZED);
+        }
+    }
+
+
     @GetMapping("/getOne")
     public ResponseEntity<?> getOne(@RequestParam("userId") Integer userId) {
-        log.warn("------> {}", UserContextHolder.getUser());
         return patientService.findOne(userId);
     }
 }

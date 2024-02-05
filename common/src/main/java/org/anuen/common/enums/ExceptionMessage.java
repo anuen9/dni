@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum ExceptionMessage {
     INVALID_TOKEN("invalid token"),
     TOKEN_EXPIRED("this token was expired"),
+    UNAUTHORIZED("unauthorized access"),
 
     ;
 

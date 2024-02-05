@@ -5,10 +5,14 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.anuen.api.client.AuthClient;
 import org.anuen.common.entity.ResponseEntity;
+import org.anuen.common.enums.ExceptionMessage;
 import org.anuen.common.enums.RedisConst;
 import org.anuen.common.enums.ResponseStatus;
+import org.anuen.common.exception.UnauthorizedException;
+import org.anuen.common.utils.UserContextHolder;
 import org.anuen.user.dao.UserMapper;
 import org.anuen.user.entity.dto.LoginForm;
+import org.anuen.common.entity.ModifyPassForm;
 import org.anuen.user.entity.dto.UserDto;
 import org.anuen.user.entity.po.User;
 import org.anuen.user.service.IUserService;
@@ -17,6 +21,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.Objects;
 
 @Service
@@ -78,4 +83,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         return ResponseEntity.success("Bearer " + token);
     }
+
+    @Override
+    public ResponseEntity<?> modifyPassword(ModifyPassForm modifyPassForm) {
+        String currUserUid = modifyPassForm.getUserUid(); // get current user uuid
+        if (StrUtil.isBlank(currUserUid)) {
+            log.error("""
+                    ---> method: modifyPassword().
+                    --->---> error: parameter lose, user UUID dismiss!
+                    """);
+            return ResponseEntity.fail();
+        }
+
+        User dbUser = lambdaQuery() // check password
+                .eq(User::getUid, currUserUid)
+                .one();
+        if (!passwordEncoder.matches(modifyPassForm.getOldPassword(), dbUser.getPassword())) {
+            return ResponseEntity.fail(ResponseStatus.PERMISSION_DENY);
+        } // access
+
+        dbUser.setPassword( // change password and update database -> new pass
+                passwordEncoder.encode(modifyPassForm.getNewPassword()));
+        dbUser.setUpdateTime(new Date(System.currentTimeMillis())); // change time stamp of update time -> now
+        updateById(dbUser);
+        return ResponseEntity.success();
+    }
+
 }
