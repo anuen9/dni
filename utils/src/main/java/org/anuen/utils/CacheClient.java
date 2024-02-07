@@ -14,7 +14,12 @@ public class CacheClient {
 
     public void set(RedisConst basicInf, String key, Object value) {
         key = basicInf.getPrefix() + key;
-        String valueStr = JSONObject.toJSONString(value);
+        String valueStr;
+        if (value instanceof String) {
+            valueStr = value.toString();
+        } else {
+            valueStr = JSONObject.toJSONString(value);
+        }
         redisTemplate.opsForValue().set(key, valueStr, basicInf.getTTL(), basicInf.getTimeUnit());
     }
 

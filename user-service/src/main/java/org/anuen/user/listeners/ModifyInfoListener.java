@@ -18,7 +18,6 @@ public class ModifyInfoListener {
 
     private final IUserService userService;
 
-    // todo make enums to storage exchange and queue name
     @RabbitListener(
             bindings = @QueueBinding(
                     value = @Queue(name = "modify.user.pass.queue"),

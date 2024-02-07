@@ -31,6 +31,7 @@
         <module>api</module>
         <module>gateway</module>
         <module>utils</module>
+        <module>email-service</module>
     </modules>
 
     <!-- public dependencies -->

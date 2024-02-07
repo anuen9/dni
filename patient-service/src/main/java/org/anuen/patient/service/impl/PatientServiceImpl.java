@@ -28,6 +28,8 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.Objects;
 
+import static org.anuen.common.enums.MessageQueueConst.MQ_MODIFY_PASS;
+
 @Service
 @RequiredArgsConstructor
 @EnableConfigurationProperties(value = {DefaultInfoProperties.class, EmailProperties.class})
@@ -119,8 +121,8 @@ public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> impl
         modifyPassForm.setUserUid(currUserUid); // translate userUid by publish to mq
         try {
             rabbitTemplate.convertAndSend(
-                    "patient.topic",
-                    "modify.pass",
+                    MQ_MODIFY_PASS.getExchange(),
+                    MQ_MODIFY_PASS.getRoutingKey(),
                     modifyPassForm);
         } catch (AmqpException e) {
             log.error("""

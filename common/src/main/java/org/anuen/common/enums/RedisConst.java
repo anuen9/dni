@@ -6,8 +6,9 @@ import java.util.concurrent.TimeUnit;
 
 @Getter
 public enum RedisConst {
-    LOGIN_CODE("login:code", 2L, TimeUnit.MINUTES),
-    LOGIN_USER("login:user", 30L, TimeUnit.MINUTES),
+    LOGIN_CODE("login:code:", 2L, TimeUnit.MINUTES),
+    LOGIN_USER("login:user:", 30L, TimeUnit.MINUTES),
+    MAIL_CODE("email:code:", 10L, TimeUnit.MINUTES),
     ;
 
 

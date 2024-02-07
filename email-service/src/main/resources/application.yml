@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:mysql://sh-cynosdbmysql-grp-38086q0k.sql.tencentcdb.com:26809/dni?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8&useSSL=false
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: Fan20011001
+  mail:
+    host: smtp.qq.com
+    username: anuen.9@qq.com
+    password: aahfxwwlnramdcfh
+    port: 587
+    default-encoding: UTF-8
+    protocol: smtp
+anuen:
+  email:
+    subject:
+      verifyCode: "Verify your email address now!"
+      completed: "Thank you for using our service!"
+    resourcePath: template/
+    templateName:
+      verifyCode: verificationCodeTemplate.html
+    sourceAddr: ${spring.mail.username}
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
