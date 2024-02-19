@@ -6,13 +6,13 @@ import lombok.experimental.Accessors;
 @Getter
 @Accessors(fluent = true)
 public enum EmailSubjects {
-    VERIFY_CODE("verifyCode"),
+    VERIFY_CODE("Verify your email address now!"),
 
     ;
 
-    private final String toString;
+    private final String description;
 
-    EmailSubjects(String subject) {
-        this.toString = subject;
+    EmailSubjects(String description) {
+        this.description = description;
     }
 }

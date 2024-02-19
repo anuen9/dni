@@ -13,9 +13,6 @@ spring:
     protocol: smtp
 anuen:
   email:
-    subject:
-      verifyCode: "Verify your email address now!"
-      completed: "Thank you for using our service!"
     resourcePath: template/
     templateName:
       verifyCode: verificationCodeTemplate.html

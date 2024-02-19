@@ -4,11 +4,22 @@ import lombok.Getter;
 
 @Getter
 public enum MessageQueueConst {
+    /**
+     * modify password
+     */
     MQ_MODIFY_PASS(
             "patient.topic",
             "modify.user.pass.queue",
             "modify.pass"),
 
+    /**
+     * verify email address
+     */
+    MQ_VERIFY_EMAIL(
+            "patient.topic",
+            "send.verify.code.queue",
+            "send.code"
+    ),
 
     ;
 

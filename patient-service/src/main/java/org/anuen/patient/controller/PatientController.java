@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.anuen.common.entity.ModifyPassForm;
 import org.anuen.common.entity.ResponseEntity;
 import org.anuen.common.enums.ResponseStatus;
+import org.anuen.common.exception.FormatException;
 import org.anuen.common.exception.UnauthorizedException;
 import org.anuen.patient.entity.dto.PatientDto;
 import org.anuen.patient.service.IPatientService;
@@ -30,6 +31,15 @@ public class PatientController {
             return patientService.modifyPass(modifyPassForm);
         } catch (UnauthorizedException ue) {
             return ResponseEntity.fail(ResponseStatus.UNAUTHORIZED);
+        }
+    }
+
+    @PostMapping("/verifyEmail")
+    public ResponseEntity<?> verifyEmail(@RequestParam String email) {
+        try {
+            return patientService.verifyEmail(email);
+        } catch (FormatException fe) {
+            return ResponseEntity.fail(ResponseStatus.IS_NOT_EMAIL_ADDRESS);
         }
     }
 

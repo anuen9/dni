@@ -12,4 +12,6 @@ public interface IPatientService extends IService<Patient> {
     ResponseEntity<?> findOne(Integer userId);
 
     ResponseEntity<?> modifyPass(ModifyPassForm modifyPassForm);
+
+    ResponseEntity<?> verifyEmail(String email);
 }

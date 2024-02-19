@@ -1,7 +1,7 @@
 package org.anuen.email.service;
 
 
-import org.anuen.email.entity.EmailSettings;
+import org.anuen.common.entity.EmailSettings;
 
 public interface EmailSender {
 

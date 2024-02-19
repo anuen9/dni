@@ -1,4 +1,4 @@
-package org.anuen.email.entity;
+package org.anuen.common.entity;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -12,6 +12,8 @@ public class EmailSettings {
 
     @NotBlank
     private String subject;
+
+    private EmailSettings() {}
 
     public static EmailSettings newSettings() {
         return new EmailSettings();

@@ -13,6 +13,7 @@ public enum ResponseStatus {
     REMOTE_PROCEDURE_CALL_ERROR(1005, "the service invoked remotely failed"),
     USER_NOT_FOUND(1006, "user not found"),
     EMAIL_NOT_VERIFIED(1007, "e-mailbox not verified, verify your e-mailbox to continue"),
+    IS_NOT_EMAIL_ADDRESS(1008, ExceptionMessage.IS_NOT_EMAIL_ADDRESS.getMessage()),
 
     // normal response
     UNAUTHORIZED(401, "no authorized"),

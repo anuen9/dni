@@ -1,5 +1,6 @@
 package org.anuen.patient.service.impl;
 
+import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -7,10 +8,13 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.anuen.api.client.UserClient;
 import org.anuen.api.dto.UserDto;
+import org.anuen.common.entity.EmailSettings;
 import org.anuen.common.entity.ModifyPassForm;
 import org.anuen.common.entity.ResponseEntity;
+import org.anuen.common.enums.EmailSubjects;
 import org.anuen.common.enums.ExceptionMessage;
 import org.anuen.common.enums.ResponseStatus;
+import org.anuen.common.exception.FormatException;
 import org.anuen.common.exception.UnauthorizedException;
 import org.anuen.common.utils.UserContextHolder;
 import org.anuen.patient.config.DefaultInfoProperties;
@@ -29,10 +33,14 @@ import java.util.Date;
 import java.util.Objects;
 
 import static org.anuen.common.enums.MessageQueueConst.MQ_MODIFY_PASS;
+import static org.anuen.common.enums.MessageQueueConst.MQ_VERIFY_EMAIL;
 
 @Service
 @RequiredArgsConstructor
-@EnableConfigurationProperties(value = {DefaultInfoProperties.class, EmailProperties.class})
+@EnableConfigurationProperties(value = {
+        DefaultInfoProperties.class,
+        EmailProperties.class
+})
 public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> implements IPatientService {
 
     /**
@@ -129,6 +137,30 @@ public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> impl
                     ---> method: modifyPass().
                     --->---> [patient-service] valid access, but notify [user-service] fail!
                     """, e);
+        }
+        return ResponseEntity.success();
+    }
+
+    @Override
+    public ResponseEntity<?> verifyEmail(String email) {
+        if (StrUtil.isBlank(email) || !Validator.isEmail(email)) { // check string -> email address
+            throw new FormatException(ExceptionMessage.IS_NOT_EMAIL_ADDRESS.getMessage());
+        }
+
+        EmailSettings settings = EmailSettings.newSettings() // build settings
+                .subject(EmailSubjects.VERIFY_CODE.description())
+                .destination(email);
+
+        try { // send
+            rabbitTemplate.convertAndSend(
+                    MQ_VERIFY_EMAIL.getExchange(),
+                    MQ_VERIFY_EMAIL.getRoutingKey(),
+                    settings);
+        } catch (AmqpException e) {
+            log.error("""
+                    ---> method: verifyEmail().
+                    --->---> notify [email-service] fail!
+                    """);
         }
         return ResponseEntity.success();
     }

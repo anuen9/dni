@@ -9,8 +9,6 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "anuen.email")
 public class MailProperties {
 
-    private Map<String, String> subject;
-
     private String resourcePath;
 
     private Map<String, String> templateName;
