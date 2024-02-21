@@ -14,6 +14,7 @@ public enum ResponseStatus {
     USER_NOT_FOUND(1006, "user not found"),
     EMAIL_NOT_VERIFIED(1007, "e-mailbox not verified, verify your e-mailbox to continue"),
     IS_NOT_EMAIL_ADDRESS(1008, ExceptionMessage.IS_NOT_EMAIL_ADDRESS.getMessage()),
+    NECESSARY_PARAM_MISSING(1009, "necessary parameter missing"),
 
     // normal response
     UNAUTHORIZED(401, "no authorized"),

@@ -1,5 +1,6 @@
 package org.anuen.patient.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
@@ -21,7 +22,9 @@ import org.anuen.patient.config.DefaultInfoProperties;
 import org.anuen.patient.config.EmailProperties;
 import org.anuen.patient.dao.PatientMapper;
 import org.anuen.patient.entity.dto.PatientDto;
+import org.anuen.patient.entity.dto.NameSuggestion;
 import org.anuen.patient.entity.po.Patient;
+import org.anuen.patient.entity.vo.PatientVo;
 import org.anuen.patient.service.IPatientService;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -29,7 +32,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 import static org.anuen.common.enums.MessageQueueConst.MQ_MODIFY_PASS;
@@ -84,14 +89,17 @@ public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> impl
     }
 
     @Override
-    public ResponseEntity<?> findOne(Integer userId) {
-        Patient one = getOne(
+    public ResponseEntity<?> findOne(String uid) {
+        Patient dbOne = getOne(
                 new LambdaQueryWrapper<Patient>()
-                        .eq(Patient::getId, userId));
-        if (Objects.isNull(one)) {
+                        .eq(Patient::getUid, uid));
+        if (Objects.isNull(dbOne)) {
             return ResponseEntity.fail(ResponseStatus.USER_NOT_FOUND);
         }
-        return ResponseEntity.success(one);
+        PatientVo vo = PatientVo.newInstance();
+        BeanUtils.copyProperties(dbOne, vo);
+        vo.setName(dbOne.getLastName() + dbOne.getFirstName());
+        return ResponseEntity.success(vo);
     }
 
     /**
@@ -163,6 +171,19 @@ public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> impl
                     """);
         }
         return ResponseEntity.success();
+    }
+
+    @Override
+    public ResponseEntity<?> fetchSuggestionsByName(String name) {
+        if (StrUtil.isBlank(name)) {
+            return ResponseEntity.fail(ResponseStatus.NECESSARY_PARAM_MISSING);
+        }
+        String input = "%" + name + "%";
+        List<NameSuggestion> suggestNames = this.baseMapper.selectNamesByInput(input);
+        if (CollectionUtil.isNotEmpty(suggestNames)) {
+            return ResponseEntity.success(suggestNames);
+        }
+        return ResponseEntity.success(new ArrayList<>());
     }
 
     /**

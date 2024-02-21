@@ -43,9 +43,13 @@ public class PatientController {
         }
     }
 
+    @GetMapping("/fetchSuggestionsByName")
+    public ResponseEntity<?> fetchSuggestionsByName(@RequestParam("name") String name) {
+        return patientService.fetchSuggestionsByName(name);
+    }
 
     @GetMapping("/getOne")
-    public ResponseEntity<?> getOne(@RequestParam("userId") Integer userId) {
-        return patientService.findOne(userId);
+    public ResponseEntity<?> getOne(@RequestParam("uid") String uid) {
+        return patientService.findOne(uid);
     }
 }

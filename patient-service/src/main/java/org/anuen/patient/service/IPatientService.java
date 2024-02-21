@@ -9,9 +9,11 @@ import org.anuen.patient.entity.po.Patient;
 public interface IPatientService extends IService<Patient> {
     ResponseEntity<?> save(PatientDto patientDto);
 
-    ResponseEntity<?> findOne(Integer userId);
+    ResponseEntity<?> findOne(String uid);
 
     ResponseEntity<?> modifyPass(ModifyPassForm modifyPassForm);
 
     ResponseEntity<?> verifyEmail(String email);
+
+    ResponseEntity<?> fetchSuggestionsByName(String name);
 }

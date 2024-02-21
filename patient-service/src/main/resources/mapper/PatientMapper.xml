@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.anuen.patient.dao.PatientMapper">
+
+    <select id="selectNamesByInput" resultType="org.anuen.patient.entity.dto.NameSuggestion">
+        select concat(p.last_name, p.first_name) as name,
+               p.uid                             as uid
+        from patient p
+        where concat(p.last_name, p.first_name) like #{input};
+    </select>
+</mapper>

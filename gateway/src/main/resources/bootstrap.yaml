@@ -26,3 +26,13 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/api/user/**
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOriginPatterns:
+              - "http://localhost:*"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
