@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: advice-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 120.26.195.152:8848
+        namespace: e27cd146-99bd-402b-aaf9-6a2485253c37
+      config:
+        server-addr: 120.26.195.152:8848
+        namespace: e27cd146-99bd-402b-aaf9-6a2485253c37
+        file-extension: yaml
+      username: nacos
+      password: nacos
+server:
+  port: 18086

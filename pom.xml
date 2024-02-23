@@ -26,12 +26,16 @@
     <modules>
         <module>user-service</module>
         <module>common</module>
-        <module>medicalrecord-service</module>
         <module>patient-service</module>
         <module>api</module>
         <module>gateway</module>
         <module>utils</module>
         <module>email-service</module>
+        <module>appointment-service</module>
+        <module>doctor-service</module>
+        <module>nurse-service</module>
+        <module>advice-service</module>
+        <module>record-service</module>
     </modules>
 
     <!-- public dependencies -->

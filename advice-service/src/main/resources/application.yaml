@@ -10,19 +10,6 @@ spring:
     virtual-host: /
     username: anuen
     password: 20011001
-  mail:
-    host: smtp.qq.com
-    username: anuen.9@qq.com
-    password: aahfxwwlnramdcfh
-    port: 587
-    default-encoding: UTF-8
-    protocol: smtp
-anuen:
-  email:
-    resourcePath: template/
-    templateName:
-      verifyCode: verificationCodeTemplate.html
-    sourceAddr: ${spring.mail.username}
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
   configuration:
