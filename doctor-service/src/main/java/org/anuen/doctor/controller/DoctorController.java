@@ -1,24 +1,24 @@
-package org.anuen.appointment.controller;
+package org.anuen.doctor.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.anuen.appointment.entity.dto.AddApptDto;
-import org.anuen.appointment.service.IAppointmentService;
 import org.anuen.common.entity.ResponseEntity;
+import org.anuen.doctor.entity.dto.AddDoctorDto;
+import org.anuen.doctor.service.IDoctorService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/doctor")
 @RequiredArgsConstructor
-@RequestMapping("/api/appointment")
-public class AppointmentController {
+public class DoctorController {
 
-    private final IAppointmentService appointmentService;
+    private final IDoctorService doctorService;
 
     @PostMapping("/add")
-    public ResponseEntity<?> add(@Valid @RequestBody AddApptDto addApptDto) {
-        return appointmentService.add(addApptDto);
+    public ResponseEntity<?> add(@Valid @RequestBody AddDoctorDto addDoctorDto) {
+        return doctorService.add(addDoctorDto);
     }
 }

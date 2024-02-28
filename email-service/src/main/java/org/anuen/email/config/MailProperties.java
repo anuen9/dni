@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.Map;
 
 @Data
-@ConfigurationProperties(prefix = "anuen.email")
+@ConfigurationProperties(prefix = "anuen.mail")
 public class MailProperties {
 
     private String resourcePath;

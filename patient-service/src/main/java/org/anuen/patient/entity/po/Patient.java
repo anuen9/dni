@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Builder;
 import lombok.Data;
+import org.anuen.common.constraint.SysUser;
 
 import java.util.Date;
 
@@ -14,7 +15,8 @@ import java.util.Date;
 @Data
 @Builder
 @TableName("patient")
-public class Patient {
+public class Patient implements SysUser {
+
     @TableId(type = IdType.AUTO)
     private Integer id;
 
@@ -72,4 +74,13 @@ public class Patient {
         return Patient.builder().build();
     }
 
+    @Override
+    public String getNickname() {
+        return lastName + firstName;
+    }
+
+    @Override
+    public Integer getUserType() {
+        return 0;
+    }
 }

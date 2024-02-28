@@ -4,16 +4,13 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.anuen.api.client.AuthClient;
+import org.anuen.common.entity.ModifyPassForm;
 import org.anuen.common.entity.ResponseEntity;
-import org.anuen.common.enums.ExceptionMessage;
+import org.anuen.common.entity.dto.UserDto;
 import org.anuen.common.enums.RedisConst;
 import org.anuen.common.enums.ResponseStatus;
-import org.anuen.common.exception.UnauthorizedException;
-import org.anuen.common.utils.UserContextHolder;
 import org.anuen.user.dao.UserMapper;
 import org.anuen.user.entity.dto.LoginForm;
-import org.anuen.common.entity.ModifyPassForm;
-import org.anuen.user.entity.dto.UserDto;
 import org.anuen.user.entity.po.User;
 import org.anuen.user.service.IUserService;
 import org.anuen.utils.CacheClient;
@@ -107,6 +104,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         dbUser.setUpdateTime(new Date(System.currentTimeMillis())); // change time stamp of update time -> now
         updateById(dbUser);
         return ResponseEntity.success();
+    }
+
+    @Override
+    public ResponseEntity<?> getUserTypeByUid(String uid) {
+        User dbUser = lambdaQuery().eq(User::getUid, uid).one();
+        if (Objects.isNull(dbUser)) {
+            return ResponseEntity.fail(ResponseStatus.USER_NOT_FOUND);
+        }
+        return ResponseEntity.success(dbUser.getUserType());
     }
 
 }

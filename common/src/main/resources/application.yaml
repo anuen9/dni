@@ -1,0 +1,9 @@
+anuen:
+  default-info:
+    password: "123456"
+    patientUserType: 0
+    nurseUserType: 1
+    doctorUserType: 2
+  email:
+    emailVerified: 1
+    emailNotVerified: 0

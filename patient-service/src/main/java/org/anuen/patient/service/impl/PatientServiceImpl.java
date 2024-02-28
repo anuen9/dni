@@ -8,28 +8,27 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.anuen.api.client.UserClient;
-import org.anuen.api.dto.UserDto;
+import org.anuen.common.config.EmailProperties;
 import org.anuen.common.entity.EmailSettings;
 import org.anuen.common.entity.ModifyPassForm;
 import org.anuen.common.entity.ResponseEntity;
+import org.anuen.common.entity.dto.UserDto;
 import org.anuen.common.enums.EmailSubjects;
 import org.anuen.common.enums.ExceptionMessage;
 import org.anuen.common.enums.ResponseStatus;
 import org.anuen.common.exception.FormatException;
 import org.anuen.common.exception.UnauthorizedException;
 import org.anuen.common.utils.UserContextHolder;
-import org.anuen.patient.config.DefaultInfoProperties;
-import org.anuen.patient.config.EmailProperties;
 import org.anuen.patient.dao.PatientMapper;
-import org.anuen.patient.entity.dto.PatientDto;
 import org.anuen.patient.entity.dto.NameSuggestion;
+import org.anuen.patient.entity.dto.PatientDto;
 import org.anuen.patient.entity.po.Patient;
 import org.anuen.patient.entity.vo.PatientVo;
 import org.anuen.patient.service.IPatientService;
+import org.anuen.utils.SysUserUtil;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -42,16 +41,9 @@ import static org.anuen.common.enums.MessageQueueConst.MQ_VERIFY_EMAIL;
 
 @Service
 @RequiredArgsConstructor
-@EnableConfigurationProperties(value = {
-        DefaultInfoProperties.class,
-        EmailProperties.class
-})
 public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> implements IPatientService {
 
-    /**
-     * default properties by 'yaml'
-     */
-    private final DefaultInfoProperties defaultInfoProperties;
+    private final SysUserUtil sysUserUtil;
 
     /**
      * email properties by 'yaml'
@@ -81,9 +73,10 @@ public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> impl
         Patient patient = Patient.newInstance(); // convert dto 2 po -> insert into database
         BeanUtils.copyProperties(patientDto, patient);
         patient.setUid(IdUtil.fastUUID());
-        save(patient);
 
-        UserDto user4Save = getUser4Save(patient); // get userDto by patient
+        this.baseMapper.insert(patient);
+
+        UserDto user4Save = sysUserUtil.getUserDto4Save(patient); // get userDto by patient
         userClient.add(user4Save); // call service [user-service] to save user
         return ResponseEntity.success();
     }
@@ -185,22 +178,4 @@ public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> impl
         }
         return ResponseEntity.success(new ArrayList<>());
     }
-
-    /**
-     * read patient's information
-     * write detail into userDto prepare for 'add'
-     *
-     * @param patient patient
-     * @return userDto for saving
-     */
-    private UserDto getUser4Save(Patient patient) {
-        final String nickName = patient.getLastName() + patient.getFirstName();
-        return UserDto.builder()
-                .uid(patient.getUid())
-                .userType(defaultInfoProperties.getUserType())
-                .nickName(nickName)
-                .password(defaultInfoProperties.getPassword())
-                .build();
-    }
-
 }

@@ -1,4 +1,4 @@
-package org.anuen.user.entity.dto;
+package org.anuen.common.entity.dto;
 
 import lombok.Builder;
 import lombok.Data;

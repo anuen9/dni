@@ -5,12 +5,14 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
 @Builder
+@Accessors(chain = true)
 @TableName("appointment")
 public class Appointment {
     @TableId(type = IdType.AUTO)
