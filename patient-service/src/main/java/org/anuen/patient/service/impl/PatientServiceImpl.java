@@ -8,11 +8,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.anuen.api.client.UserClient;
-import org.anuen.common.config.EmailProperties;
 import org.anuen.common.entity.EmailSettings;
 import org.anuen.common.entity.ModifyPassForm;
 import org.anuen.common.entity.ResponseEntity;
 import org.anuen.common.entity.dto.UserDto;
+import org.anuen.common.enums.EmailStatus;
 import org.anuen.common.enums.EmailSubjects;
 import org.anuen.common.enums.ExceptionMessage;
 import org.anuen.common.enums.ResponseStatus;
@@ -44,11 +44,6 @@ import static org.anuen.common.enums.MessageQueueConst.MQ_VERIFY_EMAIL;
 public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> implements IPatientService {
 
     private final SysUserUtil sysUserUtil;
-
-    /**
-     * email properties by 'yaml'
-     */
-    private final EmailProperties emailProperties;
 
     /**
      * open feign client for RPC
@@ -115,10 +110,11 @@ public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> impl
         Patient dbPatient = lambdaQuery() // check email status
                 .eq(Patient::getUid, currUserUid)
                 .one();
-        if (emailProperties.getEmailNotVerified().equals(dbPatient.getEmailStatus())) {
+        if (EmailStatus.EMAIL_NOT_VERIFY.getStatusCode().equals(dbPatient.getEmailStatus())) {
             return ResponseEntity.fail(ResponseStatus.EMAIL_NOT_VERIFIED);
         }
-        assert /* email is verified */emailProperties.getEmailVerified().equals(dbPatient.getEmailStatus());
+        assert /* email is verified */
+                EmailStatus.EMAIL_HAS_VERIFIED.getStatusCode().equals(dbPatient.getEmailStatus());
 
         dbPatient.setUpdateTime(new Date(System.currentTimeMillis())); // update patient's [update_time] to now
         updateById(dbPatient);

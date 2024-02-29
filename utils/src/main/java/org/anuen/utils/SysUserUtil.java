@@ -1,16 +1,12 @@
 package org.anuen.utils;
 
-import org.anuen.common.config.DefaultInfoProperties;
 import org.anuen.common.constraint.SysUser;
 import org.anuen.common.entity.dto.UserDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SysUserUtil {
 
-    @Autowired
-    private DefaultInfoProperties defaultInfoProperties;
 
     /**
      * you can provide a SysUser(Patient, Doctor, Nurse) into this method
@@ -24,7 +20,7 @@ public class SysUserUtil {
                 .uid(sysUser.getUid())
                 .userType(sysUser.getUserType())
                 .nickName(sysUser.getNickname())
-                .password(defaultInfoProperties.getPassword())
+                .password("123456") /* default password */
                 .build();
     }
 }

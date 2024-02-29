@@ -19,4 +19,4 @@ anuen:
     algorithm: rs256
     alias: jwt
     password: 20011001
-    tokenTTL: 30m
+    tokenTTL: 60m

@@ -1,4 +1,2 @@
 org.anuen.common.config.MvcConfig
 org.anuen.common.config.MessageQueueConfig
-org.anuen.common.config.DefaultInfoProperties
-org.anuen.common.config.EmailProperties
