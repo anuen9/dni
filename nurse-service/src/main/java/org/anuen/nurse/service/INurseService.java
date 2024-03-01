@@ -8,4 +8,6 @@ import org.anuen.nurse.entity.po.Nurse;
 
 public interface INurseService extends IService<Nurse> {
     ResponseEntity<?> add(AddNurseDto nurseDto);
+
+    ResponseEntity<?> fetchSuggestionsByName(String name);
 }

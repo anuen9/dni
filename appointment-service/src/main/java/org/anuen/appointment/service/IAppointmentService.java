@@ -8,4 +8,6 @@ import org.anuen.common.entity.ResponseEntity;
 
 public interface IAppointmentService extends IService<Appointment> {
     ResponseEntity<?> add(AddApptDto addApptDto);
+
+    ResponseEntity<?> getListByPatient(String pUid);
 }

@@ -3,7 +3,6 @@ package org.anuen.appointment.entity.po;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -11,7 +10,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
-@Builder
 @Accessors(chain = true)
 @TableName("appointment")
 public class Appointment {
@@ -31,10 +29,6 @@ public class Appointment {
     private Integer adviceId;
     private Date createdTime;
     private Date updatedTime;
-
-    private Appointment() {
-
-    }
 
     public static Appointment newInstance() {
         return new Appointment();

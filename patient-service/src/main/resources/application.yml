@@ -14,10 +14,3 @@ mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-#anuen:
-#  default-info:
-#    password: "123456"
-#    userType: 0
-#  email:
-#    emailVerified: 1
-#    emailNotVerified: 0
