@@ -10,4 +10,6 @@ public interface IAppointmentService extends IService<Appointment> {
     ResponseEntity<?> add(AddApptDto addApptDto);
 
     ResponseEntity<?> getListByPatient(String pUid);
+
+    ResponseEntity<?> getDetailsByApptId(Integer apptId);
 }

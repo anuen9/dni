@@ -15,6 +15,8 @@ public enum ResponseStatus {
     EMAIL_NOT_VERIFIED(1007, "e-mailbox not verified, verify your e-mailbox to continue"),
     IS_NOT_EMAIL_ADDRESS(1008, ExceptionMessage.IS_NOT_EMAIL_ADDRESS.getMessage()),
     NECESSARY_PARAM_MISSING(1009, "necessary parameter missing"),
+    DATABASE_ERROR(1010, "database may be abnormal, please wait"),
+    DATABASE_NO_RECORD(1011, "database has no such record"),
 
     // normal response
     UNAUTHORIZED(401, "no authorized"),

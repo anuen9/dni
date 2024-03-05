@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 @FeignClient("user-service")
 public interface UserClient {
     @PostMapping("/api/user/add")
@@ -15,4 +17,7 @@ public interface UserClient {
 
     @GetMapping("/api/user/getUserTypeByUid")
     ResponseEntity<?> getUserTypeByUid(@RequestParam("uid") String uid);
+
+    @GetMapping("/api/user/getNamesByUidList")
+    ResponseEntity<?> getNamesByUidList(@RequestParam("uidList") List<String> uidList);
 }

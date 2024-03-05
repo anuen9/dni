@@ -1,5 +1,6 @@
 package org.anuen.user.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +16,12 @@ import org.anuen.user.entity.po.User;
 import org.anuen.user.service.IUserService;
 import org.anuen.utils.CacheClient;
 import org.springframework.beans.BeanUtils;
+import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -71,7 +74,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             return ResponseEntity.fail(ResponseStatus.REMOTE_PROCEDURE_CALL_ERROR, reason);
         }
 
-        dbUser.setPassword("Hidden");
+//        dbUser.setPassword("Hidden");
         cacheClient.set(RedisConst.LOGIN_USER, dbUser.getUid(), dbUser); // put user info into redis cache
 
         final String token = resp.getData().toString(); // get and return token
@@ -113,6 +116,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             return ResponseEntity.fail(ResponseStatus.USER_NOT_FOUND);
         }
         return ResponseEntity.success(dbUser.getUserType());
+    }
+
+    @Override
+    public ResponseEntity<?> getNamesByUidList(@NonNull List<String> uidList) {
+        /*
+         * inorder to keep the records in order(order of uidList)
+         * need to add sql statement [order by field(str, x, x, x)]
+         * */
+        StringBuilder orderByBuilder = new StringBuilder("order by field(uid");
+        uidList.forEach(uid -> {
+            orderByBuilder.append(", '");
+            orderByBuilder.append(uid);
+            orderByBuilder.append("'");
+        });
+        orderByBuilder.append(")");
+        String orderByStr = orderByBuilder.toString();
+
+        List<User> dbUsers = lambdaQuery() // query DB
+                .in(User::getUid, uidList)
+                .last(orderByStr).list();
+
+        if (CollectionUtil.isEmpty(dbUsers)) { // if no records ->  return
+            return ResponseEntity.fail(ResponseStatus.DATABASE_NO_RECORD);
+        }
+
+        List<String> names = dbUsers // make user list -> user's name list
+                .stream()
+                .map(User::getNickName)
+                .toList();
+
+        return ResponseEntity.success(names);
     }
 
 }

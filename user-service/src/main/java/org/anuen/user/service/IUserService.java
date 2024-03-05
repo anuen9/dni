@@ -7,6 +7,8 @@ import org.anuen.user.entity.dto.LoginForm;
 import org.anuen.common.entity.ModifyPassForm;
 import org.anuen.user.entity.po.User;
 
+import java.util.List;
+
 
 public interface IUserService extends IService<User> {
     ResponseEntity<?> save(UserDto userDto);
@@ -16,4 +18,6 @@ public interface IUserService extends IService<User> {
     ResponseEntity<?> modifyPassword(ModifyPassForm modifyPassForm);
 
     ResponseEntity<?> getUserTypeByUid(String uid);
+
+    ResponseEntity<?> getNamesByUidList(List<String> uidList);
 }

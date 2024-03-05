@@ -8,6 +8,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Component
@@ -41,4 +43,27 @@ public class RPCRespResolver {
         }
         return null;
     }
+
+    @Nullable
+    public <T> List<T> getRespDataOfList(ResponseEntity<?> response, Class<T> elementClz) {
+        if (!ResponseStatus.SUCCESS.getCode().equals(response.getCode())) {
+            log.error("---> Remote invoke fail!\n");
+            return null;
+        }
+
+        Object data = response.getData();
+        if (Objects.nonNull(data)) {
+            List<T> res = new ArrayList<>();
+            if (data instanceof List<?>) {
+                for (Object element : (List<?>) data) {
+                    res.add(elementClz.cast(element));
+                }
+            }
+            return res;
+        }
+
+        return null;
+    }
+
+
 }

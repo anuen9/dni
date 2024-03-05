@@ -1,11 +1,13 @@
 package org.anuen.appointment.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.anuen.api.client.UserClient;
 import org.anuen.appointment.dao.AppointmentMapper;
 import org.anuen.appointment.entity.dto.AddApptDto;
 import org.anuen.appointment.entity.po.Appointment;
+import org.anuen.appointment.entity.vo.DetailsApptVo;
 import org.anuen.appointment.entity.vo.SimpleApptVo;
 import org.anuen.appointment.service.IAppointmentService;
 import org.anuen.common.entity.ResponseEntity;
@@ -17,10 +19,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -74,6 +73,34 @@ public class AppointmentServiceImpl
         });
 
         return ResponseEntity.success(simpleVos); // end
+    }
+
+    @Override
+    public ResponseEntity<?> getDetailsByApptId(Integer apptId) {
+        Appointment dbAppt = lambdaQuery() // query DB
+                .eq(Appointment::getAppointmentId, apptId)
+                .one();
+        if (Objects.isNull(dbAppt)) {
+            return ResponseEntity.fail(ResponseStatus.DATABASE_NO_RECORD);
+        }
+
+        List<String> uidList = Arrays.asList( // get names by uid list of patient, doctor, nurse
+                dbAppt.getPatientUid(),
+                dbAppt.getDoctorUid(),
+                dbAppt.getNurseUid());
+        ResponseEntity<?> resp = userClient.getNamesByUidList(uidList);
+        List<String> names = respResolver.getRespDataOfList(resp, String.class);
+        if (CollectionUtil.isEmpty(names)) {
+            return ResponseEntity.fail(ResponseStatus.REMOTE_PROCEDURE_CALL_ERROR);
+        }
+
+        DetailsApptVo details = DetailsApptVo.newInstance();
+        BeanUtils.copyProperties(dbAppt, details);
+        details.setPatientName(names.get(0)); // the order of get is the same as the order of declaration
+        details.setDoctorName(names.get(1));
+        details.setNurseName(names.get(2));
+
+        return ResponseEntity.success(details);
     }
 
 }
