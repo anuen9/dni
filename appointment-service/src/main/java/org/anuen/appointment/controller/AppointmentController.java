@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.anuen.appointment.entity.dto.AddApptDto;
+import org.anuen.appointment.entity.dto.ModifyApptDto;
 import org.anuen.appointment.service.IAllergiesService;
 import org.anuen.appointment.service.IAppointmentService;
 import org.anuen.common.entity.ResponseEntity;
@@ -52,5 +53,10 @@ public class AppointmentController {
             log.error("---> get allergies list error, please check database");
             return ResponseEntity.fail(ResponseStatus.DATABASE_ERROR);
         }
+    }
+
+    @PostMapping("/modify")
+    public ResponseEntity<?> modify(@RequestBody ModifyApptDto modifyApptDto) {
+        return appointmentService.modify(modifyApptDto);
     }
 }

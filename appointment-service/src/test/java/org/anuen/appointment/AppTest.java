@@ -26,4 +26,8 @@ public class AppTest {
         ResponseEntity<?> detailsByApptId = appointmentService.getDetailsByApptId(4);
         System.out.println("detailsByApptId = " + detailsByApptId);
     }
+
+    @Test
+    public void test2() {
+    }
 }

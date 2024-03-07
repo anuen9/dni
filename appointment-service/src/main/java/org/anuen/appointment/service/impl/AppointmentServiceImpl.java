@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.anuen.api.client.UserClient;
 import org.anuen.appointment.dao.AppointmentMapper;
 import org.anuen.appointment.entity.dto.AddApptDto;
+import org.anuen.appointment.entity.dto.ModifyApptDto;
 import org.anuen.appointment.entity.po.Appointment;
 import org.anuen.appointment.entity.vo.DetailsApptVo;
 import org.anuen.appointment.entity.vo.SimpleApptVo;
@@ -101,6 +102,25 @@ public class AppointmentServiceImpl
         details.setNurseName(names.get(2));
 
         return ResponseEntity.success(details);
+    }
+
+    @Override
+    public ResponseEntity<?> modify(ModifyApptDto modifyApptDto) {
+        Integer apptId = modifyApptDto.getAppointmentId();
+        Appointment dbAppt = lambdaQuery() // find DB record
+                .eq(Appointment::getAppointmentId, apptId)
+                .one();
+        String currDoctorUid = UserContextHolder.getUser(); // determine whether the operator has permission
+        if (!currDoctorUid.equals(dbAppt.getDoctorUid())) {
+            return ResponseEntity.fail(ResponseStatus.DOCTOR_OPERATE_DENY);
+        }
+
+        BeanUtils.copyProperties(modifyApptDto, dbAppt); // copy dto -> po and update into DB
+        dbAppt.setUpdatedTime(new Date(System.currentTimeMillis()));
+
+        this.baseMapper.updateById(dbAppt);
+
+        return ResponseEntity.success();
     }
 
 }

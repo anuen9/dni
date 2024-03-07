@@ -17,6 +17,7 @@ public enum ResponseStatus {
     NECESSARY_PARAM_MISSING(1009, "necessary parameter missing"),
     DATABASE_ERROR(1010, "database may be abnormal, please wait"),
     DATABASE_NO_RECORD(1011, "database has no such record"),
+    DOCTOR_OPERATE_DENY(1012, "you do not have permission to operate"),
 
     // normal response
     UNAUTHORIZED(401, "no authorized"),
