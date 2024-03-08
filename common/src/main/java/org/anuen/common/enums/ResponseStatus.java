@@ -18,6 +18,10 @@ public enum ResponseStatus {
     DATABASE_ERROR(1010, "database may be abnormal, please wait"),
     DATABASE_NO_RECORD(1011, "database has no such record"),
     DOCTOR_OPERATE_DENY(1012, "you do not have permission to operate"),
+    PARAM_LOSS_LOGIC(1013, "parameter of form loss logic, please check again"),
+
+    // failure in service details
+    APPT_NOT_EXIST(2001, "appointment not exist"),
 
     // normal response
     UNAUTHORIZED(401, "no authorized"),

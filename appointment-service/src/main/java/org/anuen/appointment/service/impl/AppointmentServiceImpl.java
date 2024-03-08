@@ -3,6 +3,7 @@ package org.anuen.appointment.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.anuen.api.client.AdviceClient;
 import org.anuen.api.client.UserClient;
 import org.anuen.appointment.dao.AppointmentMapper;
 import org.anuen.appointment.entity.dto.AddApptDto;
@@ -15,6 +16,7 @@ import org.anuen.common.entity.ResponseEntity;
 import org.anuen.common.enums.ResponseStatus;
 import org.anuen.common.utils.UserContextHolder;
 import org.anuen.utils.RPCRespResolver;
+import org.anuen.utils.SysUserUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -31,12 +33,15 @@ public class AppointmentServiceImpl
 
     private final RPCRespResolver respResolver;
 
+    private final SysUserUtil sysUserUtil;
+
+    private final AdviceClient adviceClient;
+
     @Override
     public ResponseEntity<?> add(AddApptDto addApptDto) {
         String currUserUid = UserContextHolder.getUser(); // check current user are doctor?
-        ResponseEntity<?> resp = userClient.getUserTypeByUid(currUserUid);
-        Integer userType = respResolver.getRespData(resp, Integer.class);
-        if (Objects.isNull(userType)) {
+        Integer userType = sysUserUtil.getUserType(currUserUid);
+        if (userType.equals(-1)) {
             return ResponseEntity.fail(ResponseStatus.REMOTE_PROCEDURE_CALL_ERROR);
         }
         if (!userType.equals(2)) { // if current user are not doctor -> return
@@ -119,6 +124,41 @@ public class AppointmentServiceImpl
         dbAppt.setUpdatedTime(new Date(System.currentTimeMillis()));
 
         this.baseMapper.updateById(dbAppt);
+
+        return ResponseEntity.success();
+    }
+
+    @Override
+    public Boolean isAppointmentExist(Integer apptId) {
+        Appointment dbAppt = lambdaQuery()
+                .select(Appointment::getAppointmentId)
+                .eq(Appointment::getAppointmentId, apptId)
+                .one();
+        if (Objects.isNull(dbAppt)) {
+            return Boolean.FALSE;
+        }
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public ResponseEntity<?> bindWithAdvice(
+            @NonNull Integer apptId, @NonNull Integer adviceId) {
+        if (!isAppointmentExist(apptId)
+                || !adviceClient.isAdviceExist(adviceId)) { // advice are not exist
+            return ResponseEntity.fail();
+        }
+
+        Appointment dbAppt = lambdaQuery().eq(Appointment::getAppointmentId, apptId).one();
+        dbAppt.setUpdatedTime(new Date(System.currentTimeMillis()));
+        dbAppt.setAdviceId(adviceId);
+        try {
+            this.baseMapper.updateById(dbAppt);
+        } catch (Exception e) {
+            log.error("""
+                    ---> updateById operate in DB: appointment fail!
+                    """);
+            return ResponseEntity.fail();
+        }
 
         return ResponseEntity.success();
     }

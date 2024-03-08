@@ -44,8 +44,17 @@ public class RPCRespResolver {
         return null;
     }
 
+    /**
+     * You can parse the list-type data in the response body
+     * By calling this method and passing in the response body and element type.
+     *
+     * @param response   response entity from remote service invoke
+     * @param elementClz element type of list-type data in response
+     * @param <T>        auto
+     * @return a list of elementClz
+     */
     @Nullable
-    public <T> List<T> getRespDataOfList(ResponseEntity<?> response, Class<T> elementClz) {
+    public <T> List<T> getRespDataOfList(@NonNull ResponseEntity<?> response, @NonNull Class<T> elementClz) {
         if (!ResponseStatus.SUCCESS.getCode().equals(response.getCode())) {
             log.error("---> Remote invoke fail!\n");
             return null;
@@ -65,5 +74,25 @@ public class RPCRespResolver {
         return null;
     }
 
-
+    /**
+     * You can tell whether the remote service call was successful
+     * By calling this method and passing in the response。
+     *
+     * @param response response entity from remote provider call
+     * @return false -> fail / true -> success
+     */
+    @NonNull
+    public Boolean isInvokeSuccess(@NonNull ResponseEntity<?> response) {
+        try {
+            if (!ResponseStatus.SUCCESS.getCode().equals(response.getCode())) {
+                return Boolean.FALSE;
+            }
+            return Boolean.TRUE;
+        } catch (Exception e) {
+            log.error("""
+                    ---> remote invoke fail
+                    """);
+            return Boolean.FALSE;
+        }
+    }
 }

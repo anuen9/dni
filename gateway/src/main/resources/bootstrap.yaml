@@ -38,6 +38,10 @@ spring:
           uri: lb://nurse-service
           predicates:
             - Path=/api/nurse/**
+        - id: advice-service
+          uri: lb://advice-service
+          predicates:
+            - Path=/api/advice/**
       globalcors:
         corsConfigurations:
           '[/**]':

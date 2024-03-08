@@ -59,4 +59,22 @@ public class AppointmentController {
     public ResponseEntity<?> modify(@RequestBody ModifyApptDto modifyApptDto) {
         return appointmentService.modify(modifyApptDto);
     }
+
+    @GetMapping("/isAppointmentExist")
+    public Boolean isAppointmentExist(@RequestParam("apptId") Integer apptId) {
+        if (Objects.isNull(apptId) || apptId.equals(0)) {
+            return Boolean.FALSE;
+        }
+        return appointmentService.isAppointmentExist(apptId);
+    }
+
+    @PostMapping("/bindWithAdvice")
+    public ResponseEntity<?> bindWithAdvice(
+            @RequestParam("apptId") Integer apptId, @RequestParam("adviceId") Integer adviceId) {
+        if (Objects.isNull(adviceId) || adviceId.equals(0)
+                || Objects.isNull(apptId) || apptId.equals(0)) {
+            return ResponseEntity.fail(ResponseStatus.PARAM_LOSE);
+        }
+        return appointmentService.bindWithAdvice(apptId, adviceId);
+    }
 }

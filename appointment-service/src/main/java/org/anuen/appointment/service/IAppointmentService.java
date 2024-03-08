@@ -15,4 +15,8 @@ public interface IAppointmentService extends IService<Appointment> {
     ResponseEntity<?> getDetailsByApptId(Integer apptId);
 
     ResponseEntity<?> modify(ModifyApptDto modifyApptDto);
+
+    Boolean isAppointmentExist(Integer apptId);
+
+    ResponseEntity<?> bindWithAdvice(Integer apptId, Integer adviceId);
 }
