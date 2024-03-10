@@ -19,6 +19,7 @@ public enum ResponseStatus {
     DATABASE_NO_RECORD(1011, "database has no such record"),
     DOCTOR_OPERATE_DENY(1012, "you do not have permission to operate"),
     PARAM_LOSS_LOGIC(1013, "parameter of form loss logic, please check again"),
+    DATABASE_INCONSISTENCY(1014, "database consistency check fails"),
 
     // failure in service details
     APPT_NOT_EXIST(2001, "appointment not exist"),

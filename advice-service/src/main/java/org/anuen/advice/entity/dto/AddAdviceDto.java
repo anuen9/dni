@@ -5,7 +5,6 @@ import lombok.Data;
 @Data
 public class AddAdviceDto {
     private String patientUid;
-    private String doctorUid;
     private String content;
     private Integer needNursing;
     private Integer requiredNursingNumber;

@@ -26,4 +26,13 @@ public enum NeedNursingEnum {
         }
         return Boolean.FALSE;
     }
+
+    public static String getMeaningByValue(Integer value) {
+        for (NeedNursingEnum anEnum : NeedNursingEnum.values()) {
+            if (anEnum.getValue().equals(value)) {
+                return anEnum.getMeaning();
+            }
+        }
+        return null;
+    }
 }

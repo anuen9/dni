@@ -1,5 +1,6 @@
 package org.anuen.advice.controller;
 
+import cn.hutool.core.util.StrUtil;
 import lombok.RequiredArgsConstructor;
 import org.anuen.advice.entity.dto.AddAdviceDto;
 import org.anuen.advice.service.IAdviceService;
@@ -31,5 +32,13 @@ public class AdviceController {
             return Boolean.FALSE;
         }
         return adviceService.isAdviceExist(adviceId);
+    }
+
+    @GetMapping("/getListByPatient")
+    public ResponseEntity<?> getListByPatient(@RequestParam("patientUid") String patientUid) {
+        if (StrUtil.isBlank(patientUid)) {
+            return ResponseEntity.fail(ResponseStatus.PARAM_LOSE);
+        }
+        return adviceService.getListByPatient(patientUid);
     }
 }
