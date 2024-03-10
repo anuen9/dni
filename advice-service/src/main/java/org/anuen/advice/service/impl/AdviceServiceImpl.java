@@ -1,13 +1,18 @@
 package org.anuen.advice.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.anuen.advice.dao.AdviceMapper;
 import org.anuen.advice.entity.dto.AddAdviceDto;
 import org.anuen.advice.entity.po.Advice;
+import org.anuen.advice.entity.vo.DetailsAdviceVo;
 import org.anuen.advice.enums.NeedNursingEnum;
+import org.anuen.advice.enums.NursingFrequencyEnum;
 import org.anuen.advice.service.IAdviceService;
 import org.anuen.api.client.AppointmentClient;
+import org.anuen.api.client.UserClient;
 import org.anuen.common.entity.ResponseEntity;
 import org.anuen.common.enums.ResponseStatus;
 import org.anuen.common.utils.UserContextHolder;
@@ -17,8 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -31,10 +35,12 @@ public class AdviceServiceImpl
 
     private final RPCRespResolver respResolver;
 
+    private final UserClient userClient;
+
     @Override
     @Transactional
     public ResponseEntity<?> add(AddAdviceDto addAdviceDto) {
-        if (!isLogical(addAdviceDto)) {
+        if (!isLogical(addAdviceDto) || StrUtil.isBlank(addAdviceDto.getContent())) {
             return ResponseEntity.fail(ResponseStatus.PARAM_LOSS_LOGIC);
         }
 
@@ -85,18 +91,59 @@ public class AdviceServiceImpl
         return Boolean.TRUE;
     }
 
+    @Override
+    public ResponseEntity<?> getListByPatient(String patientUid) {
+        List<Advice> dbAdvices = lambdaQuery()
+                .eq(Advice::getPatientUid, patientUid)
+                .list();
+        if (CollectionUtil.isEmpty(dbAdvices)) {
+            return ResponseEntity.success();
+        }
+
+        List<DetailsAdviceVo> voList = new ArrayList<>();
+        for (Advice advice : dbAdvices) {
+            String pUid = advice.getPatientUid();
+            String dUid = advice.getDoctorUid();
+            Integer needNursing = advice.getNeedNursing();
+            Integer nursingFrequency = advice.getNursingFrequency();
+
+            ResponseEntity<?> resp = userClient.getNamesByUidList(Arrays.asList(pUid, dUid));
+            List<String> names = respResolver.getRespDataOfList(resp, String.class);
+            if (CollectionUtil.isEmpty(names)) {
+                return ResponseEntity.fail(ResponseStatus.DATABASE_INCONSISTENCY);
+            }
+
+            DetailsAdviceVo detailVo = DetailsAdviceVo.newInstance();
+            detailVo.setAdviceId(advice.getAdviceId());
+            detailVo.setPatientName(names.get(0));
+            detailVo.setDoctorName(names.get(1));
+            detailVo.setContent(advice.getContent());
+            detailVo.setNeedNursing(NeedNursingEnum.getMeaningByValue(needNursing));
+            detailVo.setRequiredNursingNumber(advice.getRequiredNursingNumber());
+            detailVo.setNursingFrequency(NursingFrequencyEnum.getMeaningByValue(nursingFrequency));
+            detailVo.setStatus(advice.getStatus());
+            detailVo.setAppointmentId(advice.getAppointmentId());
+            detailVo.setCreatedTime(advice.getCreatedTime());
+            detailVo.setUpdatedTime(advice.getUpdatedTime());
+            voList.add(detailVo);
+        }
+
+        return ResponseEntity.success(voList);
+    }
+
     private Boolean isLogical(AddAdviceDto adviceDto) {
         Integer beNeeded = adviceDto.getNeedNursing();
         Integer requiredNursingNumber = adviceDto.getRequiredNursingNumber();
         Integer nursingFrequency = adviceDto.getNursingFrequency();
 
-        if (NeedNursingEnum.isValueValid(beNeeded)) { // the value of beNeeded are invalid -> return false
+        if (!NeedNursingEnum.isValueValid(beNeeded)) { // the value of beNeeded are invalid -> return false
             return Boolean.FALSE;
         }
 
         if (NeedNursingEnum.NEED.getValue().equals(beNeeded)) { // situation of need nursing
             if (requiredNursingNumber.equals(0)
-                    || nursingFrequency.equals(0)) { // but required nursing number or nursing frequency are 0 -> return false
+                    || nursingFrequency.equals(0)
+                    || !Arrays.asList(1, 2, 3).contains(nursingFrequency)) { // but required nursing number or nursing frequency are 0 -> return false
                 return Boolean.FALSE;
             }
         } else { // situation of don't need nursing
