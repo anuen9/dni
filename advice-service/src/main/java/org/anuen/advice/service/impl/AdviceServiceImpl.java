@@ -19,8 +19,8 @@ import org.anuen.common.utils.UserContextHolder;
 import org.anuen.utils.RPCRespResolver;
 import org.anuen.utils.SysUserUtil;
 import org.springframework.beans.BeanUtils;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -38,7 +38,6 @@ public class AdviceServiceImpl
     private final UserClient userClient;
 
     @Override
-    @Transactional
     public ResponseEntity<?> add(AddAdviceDto addAdviceDto) {
         if (!isLogical(addAdviceDto) || StrUtil.isBlank(addAdviceDto.getContent())) {
             return ResponseEntity.fail(ResponseStatus.PARAM_LOSS_LOGIC);
@@ -129,6 +128,30 @@ public class AdviceServiceImpl
         }
 
         return ResponseEntity.success(voList);
+    }
+
+    @Override
+    public ResponseEntity<?> getOne(@NonNull Integer adviceId) {
+        Advice dbAdvice = lambdaQuery().eq(Advice::getAdviceId, adviceId).one();
+        if (Objects.isNull(dbAdvice)) {
+            return ResponseEntity.success();
+        }
+
+        List<String> uidList = new ArrayList<>(Arrays.asList(dbAdvice.getPatientUid(), dbAdvice.getDoctorUid()));
+        ResponseEntity<?> resp = userClient.getNamesByUidList(uidList);
+        List<String> names = respResolver.getRespDataOfList(resp, String.class);
+        if (CollectionUtil.isEmpty(names)) {
+            return ResponseEntity.fail(ResponseStatus.REMOTE_PROCEDURE_CALL_ERROR);
+        }
+
+        DetailsAdviceVo adviceVo = DetailsAdviceVo.newInstance();
+        BeanUtils.copyProperties(dbAdvice, adviceVo);
+        adviceVo.setPatientName(names.get(0));
+        adviceVo.setDoctorName(names.get(1));
+        adviceVo.setNeedNursing(NeedNursingEnum.getMeaningByValue(dbAdvice.getNeedNursing()));
+        adviceVo.setNursingFrequency(NursingFrequencyEnum.getMeaningByValue(dbAdvice.getNursingFrequency()));
+
+        return ResponseEntity.success(adviceVo);
     }
 
     private Boolean isLogical(AddAdviceDto adviceDto) {

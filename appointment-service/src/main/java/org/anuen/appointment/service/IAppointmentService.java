@@ -19,4 +19,6 @@ public interface IAppointmentService extends IService<Appointment> {
     Boolean isAppointmentExist(Integer apptId);
 
     ResponseEntity<?> bindWithAdvice(Integer apptId, Integer adviceId);
+
+    ResponseEntity<?> getNotBoundListByPatient(String pUid);
 }

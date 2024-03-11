@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum NursingFrequencyEnum {
+    NONE(0, "do not need nursing"),
     ONCE_A_DAY(1, "once a day"),
     TWICE_A_DAY(2, "twice a day"),
     THREE_TIMES_A_DAY(3, "three times a day"),

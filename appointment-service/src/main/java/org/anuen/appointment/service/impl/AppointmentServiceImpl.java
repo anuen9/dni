@@ -5,10 +5,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.anuen.api.client.AdviceClient;
 import org.anuen.api.client.UserClient;
+import org.anuen.appointment.AppointmentStatusEnum;
 import org.anuen.appointment.dao.AppointmentMapper;
 import org.anuen.appointment.entity.dto.AddApptDto;
 import org.anuen.appointment.entity.dto.ModifyApptDto;
 import org.anuen.appointment.entity.po.Appointment;
+import org.anuen.appointment.entity.vo.BindApptVo;
 import org.anuen.appointment.entity.vo.DetailsApptVo;
 import org.anuen.appointment.entity.vo.SimpleApptVo;
 import org.anuen.appointment.service.IAppointmentService;
@@ -53,6 +55,7 @@ public class AppointmentServiceImpl
         final Date now = new Date(System.currentTimeMillis()); // get current date time
 
         appointment.setDoctorUid(currUserUid)
+                .setAdviceId(0)
                 .setAppointmentDate(now);
 
         this.baseMapper.insert(appointment);
@@ -161,6 +164,38 @@ public class AppointmentServiceImpl
         }
 
         return ResponseEntity.success();
+    }
+
+    @Override
+    public ResponseEntity<?> getNotBoundListByPatient(@NonNull String pUid) {
+        String currUserUid = UserContextHolder.getUser(); // whether is a doctor
+        Integer userType = sysUserUtil.getUserType(currUserUid);
+        if (userType.equals(-1) || !userType.equals(2)) {
+            return ResponseEntity.fail(ResponseStatus.PERMISSION_DENY);
+        }
+
+        List<Appointment> apptList = lambdaQuery() // select list of: not bound / created by current doctor / status equals progress
+                .eq(Appointment::getPatientUid, pUid)
+                .eq(Appointment::getAdviceId, 0)
+                .eq(Appointment::getDoctorUid, currUserUid)
+                .eq(Appointment::getAppointmentStatus, AppointmentStatusEnum.PROGRESS.getStatus())
+                .orderByDesc(Appointment::getAppointmentDate)
+                .list();
+        if (CollectionUtil.isEmpty(apptList)) {
+            return ResponseEntity.success(new ArrayList<>());
+        }
+
+        List<BindApptVo> bindVoList = new ArrayList<>(); // po -> vo
+        apptList.forEach(appt -> {
+            BindApptVo bindVo = BindApptVo.newInstance();
+            bindVo.setAppointmentId(appt.getAppointmentId());
+            bindVo.setAppointmentDate(appt.getAppointmentDate());
+            bindVo.setDiagnosis(appt.getDiagnosis());
+            bindVo.setPrescription(appt.getPrescription());
+            bindVoList.add(bindVo);
+        });
+
+        return ResponseEntity.success(bindVoList);
     }
 
 }

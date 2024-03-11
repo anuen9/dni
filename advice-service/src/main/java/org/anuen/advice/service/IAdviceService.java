@@ -12,4 +12,6 @@ public interface IAdviceService extends IService<Advice> {
     Boolean isAdviceExist(Integer adviceId);
 
     ResponseEntity<?> getListByPatient(String patientUid);
+
+    ResponseEntity<?> getOne(Integer adviceId);
 }

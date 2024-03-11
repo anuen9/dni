@@ -77,4 +77,12 @@ public class AppointmentController {
         }
         return appointmentService.bindWithAdvice(apptId, adviceId);
     }
+
+    @GetMapping("/getNotBoundListByPatient")
+    public ResponseEntity<?> getNotBoundListByPatient(@RequestParam("patientUid") String pUid) {
+        if (StrUtil.isBlank(pUid)) {
+            return ResponseEntity.fail(ResponseStatus.PARAM_LOSE);
+        }
+        return appointmentService.getNotBoundListByPatient(pUid);
+    }
 }

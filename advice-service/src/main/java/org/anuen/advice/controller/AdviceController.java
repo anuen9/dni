@@ -41,4 +41,12 @@ public class AdviceController {
         }
         return adviceService.getListByPatient(patientUid);
     }
+
+    @GetMapping("/getOne")
+    public ResponseEntity<?> getOne(@RequestParam("adviceId") Integer adviceId) {
+        if (Objects.isNull(adviceId)) {
+            return ResponseEntity.fail(ResponseStatus.PARAM_LOSE);
+        }
+        return adviceService.getOne(adviceId);
+    }
 }
