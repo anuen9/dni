@@ -16,6 +16,7 @@ import org.anuen.appointment.entity.vo.SimpleApptVo;
 import org.anuen.appointment.service.IAppointmentService;
 import org.anuen.common.entity.ResponseEntity;
 import org.anuen.common.enums.ResponseStatus;
+import org.anuen.common.exception.DatabaseException;
 import org.anuen.common.utils.UserContextHolder;
 import org.anuen.utils.RPCRespResolver;
 import org.anuen.utils.SysUserUtil;
@@ -148,20 +149,14 @@ public class AppointmentServiceImpl
             @NonNull Integer apptId, @NonNull Integer adviceId) {
         if (!isAppointmentExist(apptId)
                 || !adviceClient.isAdviceExist(adviceId)) { // advice are not exist
-            return ResponseEntity.fail();
+            throw new DatabaseException("record not exists");
         }
 
         Appointment dbAppt = lambdaQuery().eq(Appointment::getAppointmentId, apptId).one();
         dbAppt.setUpdatedTime(new Date(System.currentTimeMillis()));
         dbAppt.setAdviceId(adviceId);
-        try {
-            this.baseMapper.updateById(dbAppt);
-        } catch (Exception e) {
-            log.error("""
-                    ---> updateById operate in DB: appointment fail!
-                    """);
-            return ResponseEntity.fail();
-        }
+
+        this.baseMapper.updateById(dbAppt);
 
         return ResponseEntity.success();
     }

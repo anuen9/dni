@@ -7,20 +7,24 @@ import lombok.RequiredArgsConstructor;
 import org.anuen.advice.dao.AdviceMapper;
 import org.anuen.advice.entity.dto.AddAdviceDto;
 import org.anuen.advice.entity.po.Advice;
+import org.anuen.advice.entity.vo.BindAdviceVo;
 import org.anuen.advice.entity.vo.DetailsAdviceVo;
 import org.anuen.advice.enums.NeedNursingEnum;
 import org.anuen.advice.enums.NursingFrequencyEnum;
 import org.anuen.advice.service.IAdviceService;
+import org.anuen.advice.service.IAdviceTransService;
 import org.anuen.api.client.AppointmentClient;
 import org.anuen.api.client.UserClient;
 import org.anuen.common.entity.ResponseEntity;
 import org.anuen.common.enums.ResponseStatus;
+import org.anuen.common.exception.DatabaseException;
 import org.anuen.common.utils.UserContextHolder;
 import org.anuen.utils.RPCRespResolver;
 import org.anuen.utils.SysUserUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -36,6 +40,8 @@ public class AdviceServiceImpl
     private final RPCRespResolver respResolver;
 
     private final UserClient userClient;
+
+    private final IAdviceTransService adviceTransService;
 
     @Override
     public ResponseEntity<?> add(AddAdviceDto addAdviceDto) {
@@ -60,6 +66,7 @@ public class AdviceServiceImpl
         advice.setUpdatedTime(now);
 
         final Integer reqApptId = advice.getAppointmentId(); // if appointment id in request was not exist, just insert into 1 database..
+        advice.setAppointmentId(0);
         if (Objects.isNull(reqApptId) || reqApptId.equals(0)) {
             this.baseMapper.insert(advice);
             return ResponseEntity.success();
@@ -70,10 +77,8 @@ public class AdviceServiceImpl
         }
 
         this.baseMapper.insert(advice); // insert into 2 databases
-        ResponseEntity<?> resp = appointmentClient.bindWithAdvice(reqApptId, advice.getAdviceId());
-        if (!respResolver.isInvokeSuccess(resp)) { // bind appointment with advice fail
-            return ResponseEntity.fail();
-        }
+
+        adviceTransService.callBack(this::bidirectionalBind, advice.getAdviceId(), reqApptId);
 
         return ResponseEntity.success();
     }
@@ -152,6 +157,56 @@ public class AdviceServiceImpl
         adviceVo.setNursingFrequency(NursingFrequencyEnum.getMeaningByValue(dbAdvice.getNursingFrequency()));
 
         return ResponseEntity.success(adviceVo);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<?> bidirectionalBind(Integer adviceId, Integer apptId) {
+        Boolean isApptExist = appointmentClient.isAppointmentExist(apptId);
+        Boolean isAdviceExist = isAdviceExist(adviceId);
+        if (!isApptExist || !isAdviceExist) {
+            return ResponseEntity.fail(ResponseStatus.DATABASE_INCONSISTENCY);
+        }
+
+        Advice dbAdvice = lambdaQuery().eq(Advice::getAdviceId, adviceId).one();
+        dbAdvice.setAppointmentId(apptId);
+        dbAdvice.setUpdatedTime(new Date(System.currentTimeMillis()));
+        this.baseMapper.updateById(dbAdvice);
+        ResponseEntity<?> response = appointmentClient.bindWithAdvice(apptId, adviceId);
+        if (!respResolver.isInvokeSuccess(response)) {
+            throw new DatabaseException("database consistency error");
+        }
+
+        return ResponseEntity.success();
+    }
+
+    @Override
+    public ResponseEntity<?> getNotBoundListByPatient(String pUid) {
+        List<Advice> notBoundAdvices = lambdaQuery()
+                .eq(Advice::getPatientUid, pUid)
+                .eq(Advice::getAppointmentId, 0)
+                .orderByDesc(Advice::getUpdatedTime)
+                .list();
+        if (CollectionUtil.isEmpty(notBoundAdvices)) {
+            return ResponseEntity.success(new ArrayList<>());
+        }
+
+        List<BindAdviceVo> voList = notBoundAdvices
+                .stream()
+                .map(advice -> {
+                    BindAdviceVo bindVo = BindAdviceVo.newInstance();
+                    bindVo.setAdviceId(advice.getAdviceId());
+                    bindVo.setContent(advice.getContent());
+                    bindVo.setNeedNursing(
+                            NeedNursingEnum.getMeaningByValue(advice.getNeedNursing()));
+                    bindVo.setRequiredNursingNumber(advice.getRequiredNursingNumber());
+                    bindVo.setNursingFrequency(
+                            NursingFrequencyEnum.getMeaningByValue(advice.getNursingFrequency()));
+                    return bindVo;
+                })
+                .toList();
+
+        return ResponseEntity.success(voList);
     }
 
     private Boolean isLogical(AddAdviceDto adviceDto) {

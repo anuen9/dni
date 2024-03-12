@@ -49,4 +49,22 @@ public class AdviceController {
         }
         return adviceService.getOne(adviceId);
     }
+
+    @PostMapping("/bidirectionalBind")
+    public ResponseEntity<?> bidirectionalBind(
+            @RequestParam("adviceId") Integer adviceId, @RequestParam("apptId") Integer apptId) {
+        if (Objects.isNull(adviceId) || Objects.isNull(apptId)
+                || adviceId.equals(0) || apptId.equals(0)) {
+            return ResponseEntity.fail(ResponseStatus.NECESSARY_PARAM_MISSING);
+        }
+        return adviceService.bidirectionalBind(adviceId, apptId);
+    }
+
+    @GetMapping("/getNotBoundListByPatient")
+    public ResponseEntity<?> getNotBoundListByPatient(@RequestParam("patientUid") String pUid) {
+        if (StrUtil.isBlank(pUid)) {
+            return ResponseEntity.fail(ResponseStatus.PARAM_LOSE);
+        }
+        return adviceService.getNotBoundListByPatient(pUid);
+    }
 }
