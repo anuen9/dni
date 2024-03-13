@@ -67,4 +67,12 @@ public class AdviceController {
         }
         return adviceService.getNotBoundListByPatient(pUid);
     }
+
+    @GetMapping("/getNeedNursingAdvices")
+    public ResponseEntity<?> getNeedNursingAdvices(@RequestParam("patientUid") String pUid) {
+        if (StrUtil.isBlank(pUid)) {
+            return ResponseEntity.fail(ResponseStatus.PARAM_LOSE);
+        }
+        return adviceService.getNeedNursingAdvices(pUid);
+    }
 }

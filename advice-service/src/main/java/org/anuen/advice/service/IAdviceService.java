@@ -18,4 +18,6 @@ public interface IAdviceService extends IService<Advice> {
     ResponseEntity<?> bidirectionalBind(Integer adviceId, Integer apptId);
 
     ResponseEntity<?> getNotBoundListByPatient(String pUid);
+
+    ResponseEntity<?> getNeedNursingAdvices(String pUid);
 }

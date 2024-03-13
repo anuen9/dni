@@ -20,6 +20,7 @@ public enum ResponseStatus {
     DOCTOR_OPERATE_DENY(1012, "you do not have permission to operate"),
     PARAM_LOSS_LOGIC(1013, "parameter of form loss logic, please check again"),
     DATABASE_INCONSISTENCY(1014, "database consistency check fails"),
+    TYPE_CONVERSION_ERROR(1015, "server error: type conversion error, please wait"),
 
     // failure in service details
     APPT_NOT_EXIST(2001, "appointment not exist"),
