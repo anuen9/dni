@@ -50,9 +50,18 @@ public class AdviceController {
         return adviceService.getOne(adviceId);
     }
 
+    @GetMapping("/fetchOneOfJson")
+    public String fetchOneOfJson(@RequestParam("adviceId") Integer adviceId) {
+        if (Objects.isNull(adviceId)) {
+            return null;
+        }
+        return adviceService.fetchOneOfJson(adviceId);
+    }
+
     @PostMapping("/bidirectionalBind")
     public ResponseEntity<?> bidirectionalBind(
             @RequestParam("adviceId") Integer adviceId, @RequestParam("apptId") Integer apptId) {
+
         if (Objects.isNull(adviceId) || Objects.isNull(apptId)
                 || adviceId.equals(0) || apptId.equals(0)) {
             return ResponseEntity.fail(ResponseStatus.NECESSARY_PARAM_MISSING);

@@ -20,4 +20,6 @@ public interface IAdviceService extends IService<Advice> {
     ResponseEntity<?> getNotBoundListByPatient(String pUid);
 
     ResponseEntity<?> getNeedNursingAdvices(String pUid);
+
+    String fetchOneOfJson(Integer adviceId);
 }

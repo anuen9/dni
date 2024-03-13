@@ -15,7 +15,6 @@ import org.anuen.appointment.entity.vo.DetailsApptVo;
 import org.anuen.appointment.entity.vo.SimpleApptVo;
 import org.anuen.appointment.service.IAppointmentService;
 import org.anuen.common.entity.ResponseEntity;
-import org.anuen.common.enums.ResponseStatus;
 import org.anuen.common.exception.DatabaseException;
 import org.anuen.common.utils.UserContextHolder;
 import org.anuen.utils.RPCRespResolver;
@@ -26,6 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
+
+import static org.anuen.common.enums.ResponseStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -45,10 +46,10 @@ public class AppointmentServiceImpl
         String currUserUid = UserContextHolder.getUser(); // check current user are doctor?
         Integer userType = sysUserUtil.getUserType(currUserUid);
         if (userType.equals(-1)) {
-            return ResponseEntity.fail(ResponseStatus.REMOTE_PROCEDURE_CALL_ERROR);
+            return ResponseEntity.fail(REMOTE_PROCEDURE_CALL_ERROR);
         }
         if (!userType.equals(2)) { // if current user are not doctor -> return
-            return ResponseEntity.fail(ResponseStatus.UNAUTHORIZED);
+            return ResponseEntity.fail(UNAUTHORIZED);
         }
 
         Appointment appointment = Appointment.newInstance(); // insert appt into database
@@ -91,7 +92,7 @@ public class AppointmentServiceImpl
                 .eq(Appointment::getAppointmentId, apptId)
                 .one();
         if (Objects.isNull(dbAppt)) {
-            return ResponseEntity.fail(ResponseStatus.DATABASE_NO_RECORD);
+            return ResponseEntity.fail(DATABASE_NO_RECORD);
         }
 
         List<String> uidList = Arrays.asList( // get names by uid list of patient, doctor, nurse
@@ -101,7 +102,7 @@ public class AppointmentServiceImpl
         ResponseEntity<?> resp = userClient.getNamesByUidList(uidList);
         List<String> names = respResolver.getRespDataOfList(resp, String.class);
         if (CollectionUtil.isEmpty(names)) {
-            return ResponseEntity.fail(ResponseStatus.REMOTE_PROCEDURE_CALL_ERROR);
+            return ResponseEntity.fail(REMOTE_PROCEDURE_CALL_ERROR);
         }
 
         DetailsApptVo details = DetailsApptVo.newInstance();
@@ -121,7 +122,7 @@ public class AppointmentServiceImpl
                 .one();
         String currDoctorUid = UserContextHolder.getUser(); // determine whether the operator has permission
         if (!currDoctorUid.equals(dbAppt.getDoctorUid())) {
-            return ResponseEntity.fail(ResponseStatus.DOCTOR_OPERATE_DENY);
+            return ResponseEntity.fail(DOCTOR_OPERATE_DENY);
         }
 
         BeanUtils.copyProperties(modifyApptDto, dbAppt); // copy dto -> po and update into DB
@@ -166,7 +167,7 @@ public class AppointmentServiceImpl
         String currUserUid = UserContextHolder.getUser(); // whether is a doctor
         Integer userType = sysUserUtil.getUserType(currUserUid);
         if (userType.equals(-1) || !userType.equals(2)) {
-            return ResponseEntity.fail(ResponseStatus.PERMISSION_DENY);
+            return ResponseEntity.fail(PERMISSION_DENY);
         }
 
         List<Appointment> apptList = lambdaQuery() // select list of: not bound / created by current doctor / status equals progress

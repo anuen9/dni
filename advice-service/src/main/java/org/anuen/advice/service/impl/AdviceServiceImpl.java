@@ -2,6 +2,7 @@ package org.anuen.advice.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.anuen.advice.service.IAdviceTransService;
 import org.anuen.api.client.AppointmentClient;
 import org.anuen.api.client.UserClient;
 import org.anuen.common.entity.ResponseEntity;
+import org.anuen.common.entity.json.JsonAdvice;
 import org.anuen.common.exception.DatabaseException;
 import org.anuen.common.utils.UserContextHolder;
 import org.anuen.utils.RPCRespResolver;
@@ -200,6 +202,19 @@ public class AdviceServiceImpl
             return ResponseEntity.fail(TYPE_CONVERSION_ERROR);
         }
         return ResponseEntity.success(vos);
+    }
+
+    @Override
+    public String fetchOneOfJson(Integer adviceId) {
+        Advice one = this.baseMapper.selectOne(
+                new LambdaQueryWrapper<Advice>()
+                        .eq(Advice::getAdviceId, adviceId));
+        if (Objects.isNull(one)) {
+            return null;
+        }
+        JsonAdvice jAdv = new JsonAdvice();
+        BeanUtils.copyProperties(one, jAdv);
+        return JSONObject.toJSONString(one);
     }
 
     /**

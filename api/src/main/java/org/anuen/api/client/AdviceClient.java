@@ -9,4 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface AdviceClient {
     @GetMapping("/api/advice/isAdviceExist")
     Boolean isAdviceExist(@RequestParam("adviceId") Integer adviceId);
+
+    @GetMapping("/api/advice/fetchOneOfJson")
+    String fetchOneOfJson(@RequestParam("adviceId") Integer adviceId);
+
 }
