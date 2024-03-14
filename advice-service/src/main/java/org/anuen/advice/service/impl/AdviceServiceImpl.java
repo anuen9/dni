@@ -13,7 +13,6 @@ import org.anuen.advice.entity.vo.BindAdviceVo;
 import org.anuen.advice.entity.vo.DetailsAdviceVo;
 import org.anuen.advice.enums.NeedNursingEnum;
 import org.anuen.advice.enums.NursingFrequencyEnum;
-import org.anuen.advice.enums.StatusEnum;
 import org.anuen.advice.service.IAdviceService;
 import org.anuen.advice.service.IAdviceTransService;
 import org.anuen.api.client.AppointmentClient;
