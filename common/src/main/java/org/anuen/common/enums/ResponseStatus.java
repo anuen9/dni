@@ -22,6 +22,8 @@ public enum ResponseStatus {
     DATABASE_INCONSISTENCY(1014, "database consistency check fails"),
     TYPE_CONVERSION_ERROR(1015, "server error: type conversion error, please wait"),
     ADVICE_HAS_BEEN_COMPLETED(1016, "the medical advice basis for this care has been closed"),
+    NURSE_OPERATE_DENY(1017, "you do not have permission to operate"),
+
     // failure in service details
     APPT_NOT_EXIST(2001, "appointment not exist"),
 

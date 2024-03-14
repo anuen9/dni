@@ -2,6 +2,7 @@ package org.anuen.record.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.anuen.common.entity.ResponseEntity;
+import org.anuen.record.entity.dto.FinishNDto;
 import org.anuen.record.entity.dto.NewRecordForm;
 import org.anuen.record.service.INursingRecordService;
 import org.anuen.utils.ObjectUtils;
@@ -25,5 +26,13 @@ public class RecordController {
             return ResponseEntity.fail(PARAM_LOSE);
         }
         return recordService.startNursing(newRecordForm);
+    }
+
+    @PostMapping("/finishNursing")
+    public ResponseEntity<?> finishNursing(@RequestBody FinishNDto fN) {
+        if (!ObjectUtils.isAllFieldsNonNull(fN)) {
+            return ResponseEntity.fail(PARAM_LOSE);
+        }
+        return recordService.finishNursing(fN);
     }
 }
