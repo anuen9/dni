@@ -13,6 +13,7 @@ import org.anuen.advice.entity.vo.BindAdviceVo;
 import org.anuen.advice.entity.vo.DetailsAdviceVo;
 import org.anuen.advice.enums.NeedNursingEnum;
 import org.anuen.advice.enums.NursingFrequencyEnum;
+import org.anuen.advice.enums.StatusEnum;
 import org.anuen.advice.service.IAdviceService;
 import org.anuen.advice.service.IAdviceTransService;
 import org.anuen.api.client.AppointmentClient;
@@ -32,6 +33,8 @@ import java.util.*;
 
 import static org.anuen.advice.enums.NeedNursingEnum.NEED;
 import static org.anuen.advice.enums.NeedNursingEnum.getMeaningByValue;
+import static org.anuen.advice.enums.StatusEnum.COMPLETED;
+import static org.anuen.advice.enums.StatusEnum.EXECUTING;
 import static org.anuen.common.enums.ResponseStatus.*;
 
 @Service
@@ -215,6 +218,23 @@ public class AdviceServiceImpl
         JsonAdvice jAdv = new JsonAdvice();
         BeanUtils.copyProperties(one, jAdv);
         return JSONObject.toJSONString(one);
+    }
+
+    @Override
+    public Boolean finishAdvice(Integer aId) {
+        Advice adv = this.baseMapper.selectOne(
+                new LambdaQueryWrapper<Advice>()
+                        .eq(Advice::getAdviceId, aId));
+        if (Objects.isNull(adv)) {
+            return Boolean.FALSE;
+        }
+        if (!EXECUTING.getStatus().equals(adv.getStatus())) {
+            return Boolean.FALSE;
+        }
+        adv.setStatus(COMPLETED.getStatus());
+        adv.setUpdatedTime(new Date(System.currentTimeMillis()));
+        this.baseMapper.updateById(adv);
+        return Boolean.TRUE;
     }
 
     /**

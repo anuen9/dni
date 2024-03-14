@@ -22,4 +22,6 @@ public interface IAdviceService extends IService<Advice> {
     ResponseEntity<?> getNeedNursingAdvices(String pUid);
 
     String fetchOneOfJson(Integer adviceId);
+
+    Boolean finishAdvice(Integer aId);
 }

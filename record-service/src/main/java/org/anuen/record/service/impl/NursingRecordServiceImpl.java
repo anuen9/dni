@@ -14,6 +14,8 @@ import org.anuen.record.entity.dto.FinishNDto;
 import org.anuen.record.entity.dto.NewRecordForm;
 import org.anuen.record.entity.po.NursingRecord;
 import org.anuen.record.service.INursingRecordService;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -32,11 +34,10 @@ public class NursingRecordServiceImpl
     @Override
     public ResponseEntity<?> startNursing(NewRecordForm newRecordForm) {
         Integer adviceId = newRecordForm.getAdviceId(); // fetch json advice by advice id
-        String json = adviceClient.fetchOneOfJson(adviceId);
-        if (StrUtil.isBlank(json)) {
-            return ResponseEntity.fail(DATABASE_NO_RECORD);
+        JsonAdvice jAdv = acquireJAdv(adviceId);
+        if (Objects.isNull(jAdv)) {
+            return ResponseEntity.fail(REMOTE_PROCEDURE_CALL_ERROR);
         }
-        JsonAdvice jAdv = JSONObject.parseObject(json, JsonAdvice.class);
         final String advStatus = jAdv.getStatus(); // advice status
         final Integer requireNNum = jAdv.getRequiredNursingNumber(); // advice required nursing number
         final String pUid = jAdv.getPatientUid(); // advice patient uid
@@ -68,6 +69,7 @@ public class NursingRecordServiceImpl
         record.setPatientUid(pUid);
         record.setHasBadReaction(DO_NOT_HAS.getValue());
         record.setCreateTime(now);
+        this.baseMapper.insert(record);
         return ResponseEntity.success(record.getNursingRecordId());
     }
 
@@ -81,13 +83,34 @@ public class NursingRecordServiceImpl
         if (Objects.isNull(r)) {
             return ResponseEntity.fail(DATABASE_NO_RECORD);
         }
-
         if (!r.getNursingBy().equals(UserContextHolder.getUser())) {
             return ResponseEntity.fail(NURSE_OPERATE_DENY);
         }
+        final Integer aId = r.getAdviceId();
+        JsonAdvice jAdv = acquireJAdv(aId);
+        if (Objects.isNull(jAdv)) {
+            return ResponseEntity.fail(REMOTE_PROCEDURE_CALL_ERROR);
+        }
+        final Integer requireNNum = jAdv.getRequiredNursingNumber();
+        if (r.getCurrentNursingNumber().compareTo(requireNNum) == 0) {
+            Boolean finishSucceed = adviceClient.finishAdvice(aId);
+            if (!finishSucceed) {
+                return ResponseEntity.fail(DATABASE_INCONSISTENCY);
+            }
+        }
         r.setNursingDateEnd(new Date(System.currentTimeMillis()));
         r.setHasBadReaction(hasBad);
+        this.baseMapper.updateById(r);
         return ResponseEntity.success();
+    }
+
+    @Nullable
+    private JsonAdvice acquireJAdv(@NonNull Integer aId) {
+        String json = adviceClient.fetchOneOfJson(aId);
+        if (StrUtil.isBlank(json)) {
+            return null;
+        }
+        return JSONObject.parseObject(json, JsonAdvice.class);
     }
 
 }

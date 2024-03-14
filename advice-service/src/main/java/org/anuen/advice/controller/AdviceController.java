@@ -58,6 +58,11 @@ public class AdviceController {
         return adviceService.fetchOneOfJson(adviceId);
     }
 
+    @PostMapping("/finishAdvice")
+    public Boolean finishAdvice(@RequestParam("adviceId") Integer aId) {
+        return adviceService.finishAdvice(aId);
+    }
+
     @PostMapping("/bidirectionalBind")
     public ResponseEntity<?> bidirectionalBind(
             @RequestParam("adviceId") Integer adviceId, @RequestParam("apptId") Integer apptId) {

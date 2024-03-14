@@ -42,6 +42,10 @@ spring:
           uri: lb://advice-service
           predicates:
             - Path=/api/advice/**
+        - id: record-service
+          uri: lb://record-service
+          predicates:
+            - Path=/api/record/**
       globalcors:
         corsConfigurations:
           '[/**]':
