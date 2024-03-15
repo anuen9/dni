@@ -28,4 +28,9 @@ public class NurseController {
         }
         return nurseService.fetchSuggestionsByName(name);
     }
+
+    @GetMapping("/scheduling")
+    public ResponseEntity<?> scheduling() {
+        return nurseService.scheduling();
+    }
 }

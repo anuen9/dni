@@ -14,6 +14,11 @@ public class AppTest {
     private INurseService nurseService;
 
     @Test
+    public void testSchedule() {
+        nurseService.scheduling();
+    }
+
+    @Test
     public void testAdd() {
         String[] firstNames = {
                 "Sophie", "Ethan", "Chloe", "Liam", "Ava",

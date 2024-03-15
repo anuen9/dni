@@ -10,4 +10,7 @@ public interface INurseService extends IService<Nurse> {
     ResponseEntity<?> add(AddNurseDto nurseDto);
 
     ResponseEntity<?> fetchSuggestionsByName(String name);
+
+    ResponseEntity<?> scheduling();
+
 }

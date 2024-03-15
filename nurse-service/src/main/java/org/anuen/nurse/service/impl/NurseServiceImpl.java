@@ -6,20 +6,24 @@ import lombok.RequiredArgsConstructor;
 import org.anuen.api.client.UserClient;
 import org.anuen.common.entity.ResponseEntity;
 import org.anuen.common.entity.dto.UserDto;
-import org.anuen.common.enums.ResponseStatus;
 import org.anuen.nurse.dao.NurseMapper;
 import org.anuen.nurse.entity.dto.AddNurseDto;
 import org.anuen.nurse.entity.dto.NameSuggestion;
 import org.anuen.nurse.entity.po.Nurse;
+import org.anuen.nurse.entity.po.Schedule;
+import org.anuen.nurse.entity.po.Shift;
 import org.anuen.nurse.service.INurseService;
+import org.anuen.nurse.service.IScheduleService;
+import org.anuen.nurse.service.IShiftService;
 import org.anuen.utils.SysUserUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+
+import static org.anuen.common.enums.ResponseStatus.NURSE_NUMBER_CONFLICT;
+import static org.anuen.common.enums.ResponseStatus.USER_EXISTS;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +34,10 @@ public class NurseServiceImpl
 
     private final SysUserUtil sysUserUtil;
 
+    private final IShiftService shiftService;
+
+    private final IScheduleService scheduleService;
+
     @Override
     public ResponseEntity<?> add(AddNurseDto nurseDto) {
         Nurse dbNurse = lambdaQuery()
@@ -37,7 +45,7 @@ public class NurseServiceImpl
                 .eq(Nurse::getLastName, nurseDto.getLastName())
                 .one();
         if (Objects.nonNull(dbNurse)) {
-            return ResponseEntity.fail(ResponseStatus.USER_EXISTS);
+            return ResponseEntity.fail(USER_EXISTS);
         }
 
         Nurse nurse = Nurse.newInstance();
@@ -58,6 +66,49 @@ public class NurseServiceImpl
             return ResponseEntity.success(new ArrayList<>());
         }
         return ResponseEntity.success(suggestions);
+    }
+
+    @Override
+    public ResponseEntity<?> scheduling() {
+        List<Nurse> nurses = this.baseMapper.selectList(null);
+        Queue<Nurse> nQueue = new ArrayDeque<>(nurses);
+        List<Shift> shifts = shiftService.list();
+        Integer allNeedNum = 0;
+        for (Shift shift : shifts) {
+            Integer need = shift.getNeedCount();
+            allNeedNum += need;
+        }
+        if (allNeedNum > nurses.size()) {
+            return ResponseEntity.fail(NURSE_NUMBER_CONFLICT);
+        }
+
+        List<Schedule> schedules = new ArrayList<>();
+        for (Shift shift : shifts) {
+            for (int i = 0; i < shift.getNeedCount(); i++) {
+                Nurse n = nQueue.poll();
+                if (n != null) {
+                    Schedule schedule = getSchedule(shift, n);
+                    schedules.add(schedule);
+                }
+            }
+        }
+        scheduleService.saveBatch(schedules);
+        return ResponseEntity.success();
+    }
+
+    private static Schedule getSchedule(Shift s, Nurse n) {
+        Schedule schedule = new Schedule();
+        schedule.setNurseId(n.getNurseId());
+        schedule.setShiftId(s.getShiftId());
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        Date tomorrow = calendar.getTime();
+        schedule.setDate(tomorrow);
+        return schedule;
     }
 
 }
