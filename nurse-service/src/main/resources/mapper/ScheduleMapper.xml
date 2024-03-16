@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.anuen.nurse.dao.ScheduleMapper">
+
+    <select id="selectAllVo" resultType="org.anuen.nurse.entity.vo.ScheduleVo">
+        select s.schedule_id                     as scheduleId,
+               concat(n.last_name, n.first_name) as nurseName,
+               s1.name                           as shiftName,
+               s1.type                           as shiftType,
+               s1.start_time                     as startTime,
+               s1.end_time                       as endTime,
+               s.date                            as date
+        from schedule s
+                 left join nurse n on s.nurse_id = n.nurse_id
+                 left join shift s1 on s.shift_id = s1.shift_id
+        where s.date > curdate()
+        order by s.date desc, n.last_name;
+    </select>
+</mapper>

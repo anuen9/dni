@@ -33,4 +33,9 @@ public class NurseController {
     public ResponseEntity<?> scheduling() {
         return nurseService.scheduling();
     }
+
+    @GetMapping("/getSchedule")
+    public ResponseEntity<?> getSchedule() {
+        return nurseService.getSchedule();
+    }
 }

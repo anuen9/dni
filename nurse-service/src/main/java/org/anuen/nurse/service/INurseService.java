@@ -13,4 +13,6 @@ public interface INurseService extends IService<Nurse> {
 
     ResponseEntity<?> scheduling();
 
+    ResponseEntity<?> getSchedule();
+
 }

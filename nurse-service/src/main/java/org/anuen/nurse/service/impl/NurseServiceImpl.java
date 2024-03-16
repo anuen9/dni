@@ -1,17 +1,21 @@
 package org.anuen.nurse.service.impl;
 
 import cn.hutool.core.util.IdUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.anuen.api.client.UserClient;
 import org.anuen.common.entity.ResponseEntity;
 import org.anuen.common.entity.dto.UserDto;
+import org.anuen.common.utils.UserContextHolder;
 import org.anuen.nurse.dao.NurseMapper;
 import org.anuen.nurse.entity.dto.AddNurseDto;
 import org.anuen.nurse.entity.dto.NameSuggestion;
 import org.anuen.nurse.entity.po.Nurse;
 import org.anuen.nurse.entity.po.Schedule;
 import org.anuen.nurse.entity.po.Shift;
+import org.anuen.nurse.entity.vo.ScheduleVo;
 import org.anuen.nurse.service.INurseService;
 import org.anuen.nurse.service.IScheduleService;
 import org.anuen.nurse.service.IShiftService;
@@ -22,8 +26,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 
-import static org.anuen.common.enums.ResponseStatus.NURSE_NUMBER_CONFLICT;
-import static org.anuen.common.enums.ResponseStatus.USER_EXISTS;
+import static org.anuen.common.enums.ResponseStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -70,6 +73,14 @@ public class NurseServiceImpl
 
     @Override
     public ResponseEntity<?> scheduling() {
+        String currUser = UserContextHolder.getUser();
+        Nurse currNurse = this.baseMapper.selectOne(
+                new LambdaQueryWrapper<Nurse>()
+                        .eq(Nurse::getUid, currUser));
+        if (Objects.isNull(currNurse) || currNurse.getIsLeader().equals(0)) {
+            return ResponseEntity.fail(NURSE_OPERATE_DENY);
+        }
+
         List<Nurse> nurses = this.baseMapper.selectList(null);
         Queue<Nurse> nQueue = new ArrayDeque<>(nurses);
         List<Shift> shifts = shiftService.list();
@@ -92,23 +103,40 @@ public class NurseServiceImpl
                 }
             }
         }
+        Schedule latestSchedule = scheduleService.getBaseMapper().selectOne(
+                new LambdaQueryWrapper<Schedule>()
+                        .orderByDesc(Schedule::getDate)
+                        .last("limit 1"));
+        if (latestSchedule.getDate().equals(getTomorrow())) {
+            return ResponseEntity.fail(SCHEDULE_EXIST);
+        }
         scheduleService.saveBatch(schedules);
         return ResponseEntity.success();
+    }
+
+    @Override
+    public ResponseEntity<?> getSchedule() {
+        List<ScheduleVo> allVo = scheduleService.getAllVo();
+        return ResponseEntity.success(allVo);
     }
 
     private static Schedule getSchedule(Shift s, Nurse n) {
         Schedule schedule = new Schedule();
         schedule.setNurseId(n.getNurseId());
         schedule.setShiftId(s.getShiftId());
+        Date tomorrow = getTomorrow();
+        schedule.setDate(tomorrow);
+        return schedule;
+    }
+
+    private static Date getTomorrow() {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_MONTH, 1);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
-        Date tomorrow = calendar.getTime();
-        schedule.setDate(tomorrow);
-        return schedule;
+        return calendar.getTime();
     }
 
 }
