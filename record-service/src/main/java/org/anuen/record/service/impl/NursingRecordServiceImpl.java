@@ -1,25 +1,28 @@
 package org.anuen.record.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.anuen.api.client.AdviceClient;
+import org.anuen.api.client.UserClient;
 import org.anuen.common.entity.ResponseEntity;
 import org.anuen.common.entity.json.JsonAdvice;
 import org.anuen.common.utils.UserContextHolder;
 import org.anuen.record.dao.NursingRecordMapper;
+import org.anuen.record.entity.RecordDetailVo;
 import org.anuen.record.entity.dto.FinishNDto;
 import org.anuen.record.entity.dto.NewRecordForm;
 import org.anuen.record.entity.po.NursingRecord;
 import org.anuen.record.service.INursingRecordService;
+import org.anuen.utils.RPCRespResolver;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.Objects;
+import java.util.*;
 
 import static org.anuen.common.enums.ResponseStatus.*;
 import static org.anuen.record.enums.HasBadReactionEnum.DO_NOT_HAS;
@@ -30,6 +33,10 @@ public class NursingRecordServiceImpl
         extends ServiceImpl<NursingRecordMapper, NursingRecord> implements INursingRecordService {
 
     private final AdviceClient adviceClient;
+
+    private final UserClient userClient;
+
+    private final RPCRespResolver respResolver;
 
     @Override
     public ResponseEntity<?> startNursing(NewRecordForm newRecordForm) {
@@ -102,6 +109,46 @@ public class NursingRecordServiceImpl
         r.setHasBadReaction(hasBad);
         this.baseMapper.updateById(r);
         return ResponseEntity.success();
+    }
+
+    @Override
+    public ResponseEntity<?> listByPatient(String pUid) {
+        List<NursingRecord> list = this.baseMapper.selectList(
+                new LambdaQueryWrapper<NursingRecord>()
+                        .eq(NursingRecord::getPatientUid, pUid)
+                        .orderByDesc(NursingRecord::getCreateTime));
+        if (CollectionUtil.isEmpty(list)) {
+            return ResponseEntity.success(new ArrayList<>());
+        }
+
+        List<RecordDetailVo> voList;
+        try {
+            voList = list.stream().map(this::convertToVo).toList();
+        } catch (Exception e) {
+            return ResponseEntity.fail(REMOTE_PROCEDURE_CALL_ERROR);
+        }
+        return ResponseEntity.success(voList);
+    }
+
+    private RecordDetailVo convertToVo(NursingRecord r) {
+        RecordDetailVo vo = new RecordDetailVo();
+        vo.setRecordId(r.getNursingRecordId());
+        vo.setAdviceId(r.getAdviceId());
+        vo.setStartTime(r.getNursingDateStart());
+        vo.setEndTime(r.getNursingDateEnd());
+        vo.setThisNum(r.getCurrentNursingNumber());
+        List<String> uidList = new ArrayList<>(
+                Arrays.asList(r.getNursingBy(), r.getPatientUid()));
+        ResponseEntity<?> resp = userClient.getNamesByUidList(uidList);
+        List<String> names = respResolver.getRespDataOfList(resp, String.class);
+        if (CollectionUtil.isEmpty(names) || names.size() != uidList.size()) {
+            throw new RuntimeException();
+        }
+        vo.setNursingBy(names.get(0));
+        vo.setPatientName(names.get(1));
+        vo.setBadReaction(r.getHasBadReaction().equals(1));
+        vo.setCreateTime(r.getCreateTime());
+        return vo;
     }
 
     @Nullable

@@ -11,4 +11,6 @@ public interface INursingRecordService extends IService<NursingRecord> {
     ResponseEntity<?> startNursing(NewRecordForm newRecordForm);
 
     ResponseEntity<?> finishNursing(FinishNDto fN);
+
+    ResponseEntity<?> listByPatient(String pUid);
 }
