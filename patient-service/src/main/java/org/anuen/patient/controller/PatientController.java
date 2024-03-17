@@ -52,4 +52,9 @@ public class PatientController {
     public ResponseEntity<?> getOne(@RequestParam("uid") String uid) {
         return patientService.findOne(uid);
     }
+
+    @GetMapping("/getInfo")
+    public ResponseEntity<?> getInfo() {
+        return patientService.getInfo();
+    }
 }

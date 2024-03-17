@@ -16,4 +16,6 @@ public interface IPatientService extends IService<Patient> {
     ResponseEntity<?> verifyEmail(String email);
 
     ResponseEntity<?> fetchSuggestionsByName(String name);
+
+    ResponseEntity<?> getInfo();
 }

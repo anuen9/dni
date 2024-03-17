@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.anuen.appointment.entity.dto.AddApptDto;
 import org.anuen.appointment.entity.dto.ModifyApptDto;
+import org.anuen.appointment.entity.dto.UpdateStatusDto;
 import org.anuen.appointment.service.IAllergiesService;
 import org.anuen.appointment.service.IAppointmentService;
 import org.anuen.common.entity.ResponseEntity;
@@ -84,5 +85,20 @@ public class AppointmentController {
             return ResponseEntity.fail(ResponseStatus.PARAM_LOSE);
         }
         return appointmentService.getNotBoundListByPatient(pUid);
+    }
+
+    @GetMapping("/listNeedAdmit")
+    public ResponseEntity<?> listNeedAdmit() {
+        return appointmentService.listNeedAdmit();
+    }
+
+    @PostMapping("/updateStatus")
+    public ResponseEntity<?> updateStatus(@RequestBody UpdateStatusDto us) {
+        return appointmentService.updateStatus(us);
+    }
+
+    @GetMapping("/listCanDischarge")
+    public ResponseEntity<?> listCanDischarge() {
+        return appointmentService.listCanDischarge();
     }
 }

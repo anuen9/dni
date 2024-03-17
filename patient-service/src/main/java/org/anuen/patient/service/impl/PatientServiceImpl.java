@@ -15,7 +15,6 @@ import org.anuen.common.entity.dto.UserDto;
 import org.anuen.common.enums.EmailStatus;
 import org.anuen.common.enums.EmailSubjects;
 import org.anuen.common.enums.ExceptionMessage;
-import org.anuen.common.enums.ResponseStatus;
 import org.anuen.common.exception.FormatException;
 import org.anuen.common.exception.UnauthorizedException;
 import org.anuen.common.utils.UserContextHolder;
@@ -38,6 +37,7 @@ import java.util.Objects;
 
 import static org.anuen.common.enums.MessageQueueConst.MQ_MODIFY_PASS;
 import static org.anuen.common.enums.MessageQueueConst.MQ_VERIFY_EMAIL;
+import static org.anuen.common.enums.ResponseStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -62,7 +62,7 @@ public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> impl
                 .eq(Patient::getLastName, patientDto.getLastName())
                 .one();
         if (Objects.nonNull(dbPatient)) {
-            return ResponseEntity.fail(ResponseStatus.USER_EXISTS);
+            return ResponseEntity.fail(USER_EXISTS);
         }
 
         Patient patient = Patient.newInstance(); // convert dto 2 po -> insert into database
@@ -82,7 +82,7 @@ public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> impl
                 new LambdaQueryWrapper<Patient>()
                         .eq(Patient::getUid, uid));
         if (Objects.isNull(dbOne)) {
-            return ResponseEntity.fail(ResponseStatus.USER_NOT_FOUND);
+            return ResponseEntity.fail(USER_NOT_FOUND);
         }
         PatientVo vo = PatientVo.newInstance();
         BeanUtils.copyProperties(dbOne, vo);
@@ -111,7 +111,7 @@ public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> impl
                 .eq(Patient::getUid, currUserUid)
                 .one();
         if (EmailStatus.EMAIL_NOT_VERIFY.getStatusCode().equals(dbPatient.getEmailStatus())) {
-            return ResponseEntity.fail(ResponseStatus.EMAIL_NOT_VERIFIED);
+            return ResponseEntity.fail(EMAIL_NOT_VERIFIED);
         }
         assert /* email is verified */
                 EmailStatus.EMAIL_HAS_VERIFIED.getStatusCode().equals(dbPatient.getEmailStatus());
@@ -165,7 +165,7 @@ public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> impl
     @Override
     public ResponseEntity<?> fetchSuggestionsByName(String name) {
         if (StrUtil.isBlank(name)) {
-            return ResponseEntity.fail(ResponseStatus.NECESSARY_PARAM_MISSING);
+            return ResponseEntity.fail(NECESSARY_PARAM_MISSING);
         }
         String input = "%" + name + "%";
         List<NameSuggestion> suggestNames = this.baseMapper.selectNamesByInput(input);
@@ -174,4 +174,20 @@ public class PatientServiceImpl extends ServiceImpl<PatientMapper, Patient> impl
         }
         return ResponseEntity.success(new ArrayList<>());
     }
+
+    @Override
+    public ResponseEntity<?> getInfo() {
+        String currUsr = UserContextHolder.getUser();
+        Patient me = this.baseMapper.selectOne(
+                new LambdaQueryWrapper<Patient>()
+                        .eq(Patient::getUid, currUsr));
+        if (Objects.isNull(me)) {
+            return ResponseEntity.fail(PATIENT_PERMISSION_DENY);
+        }
+        PatientVo vo = PatientVo.newInstance();
+        BeanUtils.copyProperties(me, vo);
+        vo.setName(me.getNickname());
+        return ResponseEntity.success(vo);
+    }
+
 }

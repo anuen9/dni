@@ -25,6 +25,7 @@ public enum ResponseStatus {
     NURSE_OPERATE_DENY(1017, "you do not have permission to operate"),
     NURSE_NUMBER_CONFLICT(1018, "nurse shortage"),
     SCHEDULE_EXIST(1019, "the schedule of tomorrow has been exist"),
+    PATIENT_PERMISSION_DENY(1020, "you do not have permission to look user info"),
 
     // failure in service details
     APPT_NOT_EXIST(2001, "appointment not exist"),

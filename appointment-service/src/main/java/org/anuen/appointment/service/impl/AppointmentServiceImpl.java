@@ -1,6 +1,8 @@
 package org.anuen.appointment.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.anuen.api.client.AdviceClient;
@@ -9,12 +11,14 @@ import org.anuen.appointment.AppointmentStatusEnum;
 import org.anuen.appointment.dao.AppointmentMapper;
 import org.anuen.appointment.entity.dto.AddApptDto;
 import org.anuen.appointment.entity.dto.ModifyApptDto;
+import org.anuen.appointment.entity.dto.UpdateStatusDto;
 import org.anuen.appointment.entity.po.Appointment;
 import org.anuen.appointment.entity.vo.BindApptVo;
 import org.anuen.appointment.entity.vo.DetailsApptVo;
 import org.anuen.appointment.entity.vo.SimpleApptVo;
 import org.anuen.appointment.service.IAppointmentService;
 import org.anuen.common.entity.ResponseEntity;
+import org.anuen.common.entity.json.JsonAdvice;
 import org.anuen.common.exception.DatabaseException;
 import org.anuen.common.utils.UserContextHolder;
 import org.anuen.utils.RPCRespResolver;
@@ -192,6 +196,60 @@ public class AppointmentServiceImpl
         });
 
         return ResponseEntity.success(bindVoList);
+    }
+
+    @Override
+    public ResponseEntity<?> listNeedAdmit() {
+        String currUsr = UserContextHolder.getUser();
+        List<Appointment> list = this.baseMapper.selectList(new LambdaQueryWrapper<Appointment>()
+                .eq(Appointment::getPatientUid, currUsr)
+                .eq(Appointment::getAppointmentStatus, "Progress")
+                .ne(Appointment::getAdviceId, 0));
+        if (CollectionUtil.isEmpty(list)) {
+            return ResponseEntity.success();
+        }
+        List<SimpleApptVo> needAdmitList = list.stream().filter(x -> {
+            Integer aId = x.getAdviceId();
+            String json = adviceClient.fetchOneOfJson(aId);
+            JsonAdvice jAdv = JSONObject.parseObject(json, JsonAdvice.class);
+            if (Objects.isNull(jAdv)) {
+                return false;
+            }
+            return jAdv.getNeedNursing().equals(1);
+        }).map(AppointmentServiceImpl::convertToVo).toList();
+        return ResponseEntity.success(needAdmitList);
+    }
+
+    private static SimpleApptVo convertToVo(Appointment x) {
+        SimpleApptVo v = SimpleApptVo.newInstance();
+        BeanUtils.copyProperties(x, v);
+        return v;
+    }
+
+    @Override
+    public ResponseEntity<?> updateStatus(UpdateStatusDto us) {
+        Integer aId = us.getAppointmentId();
+        String st = us.getStatus();
+        Appointment appt = this.baseMapper.selectOne(
+                new LambdaQueryWrapper<Appointment>()
+                        .eq(Appointment::getAppointmentId, aId));
+        appt.setAppointmentStatus(st);
+        appt.setUpdatedTime(new Date(System.currentTimeMillis()));
+        this.baseMapper.updateById(appt);
+        return ResponseEntity.success();
+    }
+
+    @Override
+    public ResponseEntity<?> listCanDischarge() {
+        String cu = UserContextHolder.getUser();
+        List<Appointment> list = this.baseMapper.selectList(new LambdaQueryWrapper<Appointment>()
+                .eq(Appointment::getPatientUid, cu)
+                .eq(Appointment::getAppointmentStatus, "Admitted"));
+        if (CollectionUtil.isEmpty(list)) {
+            return ResponseEntity.success();
+        }
+        List<SimpleApptVo> res = list.stream().map(AppointmentServiceImpl::convertToVo).toList();
+        return ResponseEntity.success(res);
     }
 
 }
